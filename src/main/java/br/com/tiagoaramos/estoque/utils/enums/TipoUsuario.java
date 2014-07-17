@@ -2,8 +2,8 @@ package br.com.tiagoaramos.estoque.utils.enums;
 
 public enum TipoUsuario {
 	
-	ADMINISTRADOR( (byte) 0 ,"Loja" );
-//	, USUARIO( (byte) 2,"Vendendor" );
+	ADMINISTRADOR( (byte) 0 ,"Loja" ),
+	USUARIO( (byte) 2,"Vendendor" );
 
 	public byte CODIGO;
 	public String DESCRICAO;

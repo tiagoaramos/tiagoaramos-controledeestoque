@@ -17,7 +17,7 @@ public class ActMenuMovimentacaoRetirada implements ActionListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(ControleSessaoUtil.solicitaSenha(controleEstoqueView))				
+		if(ControleSessaoUtil.solicitaSenhaAdmin(controleEstoqueView))				
 			controleEstoqueView.alteraMainPanel(new BagRetirada());
 	}
 

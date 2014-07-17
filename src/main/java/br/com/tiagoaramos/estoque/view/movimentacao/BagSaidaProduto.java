@@ -504,7 +504,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 			if(saida.getTipo().getCodigo().intValue() == TipoSaida.BAIXA.getCodigo().intValue()
 					|| saida.getTipo().getCodigo().intValue() == TipoSaida.DOACAO.getCodigo().intValue()
 					|| saida.getTipo().getCodigo().intValue() == TipoSaida.TROCA.getCodigo().intValue())
-				if(!ControleSessaoUtil.solicitaSenha(this)){
+				if(!ControleSessaoUtil.solicitaSenhaAdmin(this)){
 					JOptionPane.showMessageDialog(this,"Compra não registrada somente administradores podem fazer compras deste tipo!", "Erro",JOptionPane.ERROR_MESSAGE);
 					return;
 				}

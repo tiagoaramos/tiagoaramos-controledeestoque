@@ -640,7 +640,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 									.getCodigo().intValue()
 							|| saida.getTipo().getCodigo().intValue() == TipoSaida.TROCA
 									.getCodigo().intValue())
-						if (!ControleSessaoUtil.solicitaSenha(grid.getContentPane())) {
+						if (!ControleSessaoUtil.solicitaSenhaAdmin(grid.getContentPane())) {
 							JOptionPane
 									.showMessageDialog(
 											grid.getContentPane(),

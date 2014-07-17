@@ -133,7 +133,7 @@ public class ControleEstoqueView extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				
-				if(ControleSessaoUtil.solicitaSenha(mainPanel))				
+				if(ControleSessaoUtil.solicitaSenhaAdmin(mainPanel))				
 					alteraMainPanel(new BagCadastroSenha());
 				
 			}

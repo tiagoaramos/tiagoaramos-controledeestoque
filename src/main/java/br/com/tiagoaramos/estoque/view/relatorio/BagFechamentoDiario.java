@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -95,9 +96,9 @@ public class BagFechamentoDiario extends CadastroBagAb<ProdutoModel> {
 						
 		            	TipoRelatorio tipo = (TipoRelatorio)cmbTipoDiario.getSelectedItem();
 		            	if(tipo.getCodigo().intValue() == TipoRelatorio.FECHAMENTO_CAIXA.getCodigo().intValue()){
-		            		Date dataSolicitacao;
+		            		Date dataSolicitacao; 
 		            		if(dataCalendarComboBox.getSelectedItem() != null)
-		            			dataSolicitacao = sdf.parse((String) dataCalendarComboBox.getSelectedItem());
+		            			dataSolicitacao = ((Calendar)dataCalendarComboBox.getSelectedItem()).getTime();
 		            		else
 		            			dataSolicitacao = new Date();
 		            		
@@ -161,7 +162,7 @@ public class BagFechamentoDiario extends CadastroBagAb<ProdutoModel> {
 	private void gerarRelatorio(TipoRelatorio tipo) throws ParseException, IOException {
 		Date dataSolicitacao;
 		if(dataCalendarComboBox.getSelectedItem() != null)
-			dataSolicitacao = sdf.parse((String) dataCalendarComboBox.getSelectedItem());
+			dataSolicitacao = ((Calendar) dataCalendarComboBox.getSelectedItem()).getTime();
 		else
 			dataSolicitacao = new Date();
 		GerarRelatorio gerar = new GerarRelatorio();
