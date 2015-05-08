@@ -149,6 +149,7 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 			entrada = new EntradaModel();
 			entrada.setData(new Date());
 			entrada.setComprasProdutos(new ArrayList<EntradaProdutoModel>());
+			entrada.setTipoEntrada(TipoEntrada.PRODUCAO);
 			
 			saida = new SaidaModel();
 			saida.setData(new Date());
@@ -410,9 +411,10 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 				produtoDAO.merge(produto);
 				
 				compraProdutoModel.setPrecoCompra(produto.getPreco());
+				compraProdutoModel.setPrecoCompra(new BigDecimal(0));
 				
 			}
-			saida.setTipo(TipoSaida.BAIXA);
+			saida.setTipo(TipoSaida.USO_CONSUMO);
 			for (SaidaProdutoModel saidaProduto : saida.getProdutos()) {
 				saidaProduto.setPrecoVenda(new BigDecimal(0));
 			}
@@ -583,13 +585,16 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 				// saida corrigi custo total
 				
 				custoTotal = custoTotal.subtract(new BigDecimal(model.getQuantidade() * model.getProduto().getPreco().doubleValue()));
-				
+				saida.getProdutos().remove(model);
 			}else{
 				qtdTotalProduzida -= model.getQuantidade();
+				entrada.getComprasProdutos().remove(model);
 			}
 			custoUnitario = new BigDecimal(qtdTotalProduzida > 0 ? custoTotal.doubleValue() / (double)qtdTotalProduzida : 0);
 			
-			lista.remove(l[0]);
+			lista.remove(model);
+			
+			
 			tableModel.removeRow(l[0]);
 		
 			alteraTotal(custoTotal);

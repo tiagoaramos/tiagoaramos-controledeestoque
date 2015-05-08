@@ -2,6 +2,8 @@ package br.com.tiagoaramos.estoque.view.utils;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -16,8 +18,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.WindowConstants;
 
+import br.com.tiagoaramos.estoque.control.ControleEstoqueMain;
 import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
 import br.com.tiagoaramos.estoque.model.UsuarioModel;
 import br.com.tiagoaramos.estoque.model.dao.UsuarioDAO;
@@ -103,7 +105,7 @@ public class ControleSessaoUtil {
 
 		frLogin = new JFrame("Login");
 		frLogin.setSize(400, 300);
-		frLogin.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+		frLogin.addWindowListener(new MysqlSystemExitListenner());
 
 		mainPanel = new JPanel();
 		mainPanel.setLayout(null);
@@ -133,6 +135,7 @@ public class ControleSessaoUtil {
 								"Erro ao tentar criar um usuário.\n"
 										+ "Favor entrar em contato com o administrador do sistema.\n"
 										+ "\n" + "Erro:\n" + e1.getMessage());
+				ControleEstoqueMain.mysqldResource.shutdown();
 				System.exit(-1);
 			}
 		}
@@ -190,6 +193,7 @@ public class ControleSessaoUtil {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				ControleEstoqueMain.mysqldResource.shutdown();
 				System.exit(0);
 			}
 		});
@@ -198,6 +202,11 @@ public class ControleSessaoUtil {
 		grid.add("Senha:", jtfSenha);
 		grid.add("", jtbOk, jtbCancel);
 
+
+		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		frLogin.setLocation(dim.width / 2 - frLogin.getSize().width / 2, dim.height
+				/ 2 - frLogin.getSize().height / 2);
+		
 		frLogin.setVisible(true);
 		jtfLogin.requestFocus();
 	}

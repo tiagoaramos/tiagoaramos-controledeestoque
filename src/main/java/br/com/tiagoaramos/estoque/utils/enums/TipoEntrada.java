@@ -4,7 +4,8 @@ public enum TipoEntrada {
 	
 	COMPRA( (Integer) 1, "Compra" ),
 	DEVOLUCAO( (Integer) 2, "Devolução" ),
-	TROCA ((Integer) 3, "Troca");
+	TROCA ((Integer) 3, "Troca"),
+	PRODUCAO ((Integer) 4, "Produção");
 	
 	private Integer CODIGO;
 	private String DESCRICAO;

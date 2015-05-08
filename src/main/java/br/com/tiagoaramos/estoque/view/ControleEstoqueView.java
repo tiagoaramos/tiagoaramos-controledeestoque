@@ -18,7 +18,6 @@ import javax.swing.JPanel;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
 
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroCategoria;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroFornecedor;
@@ -38,6 +37,7 @@ import br.com.tiagoaramos.estoque.model.dao.AberturaCaixaDAO;
 import br.com.tiagoaramos.estoque.view.cadastro.BagCadastroSenha;
 import br.com.tiagoaramos.estoque.view.movimentacao.BagVendaProduto;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
+import br.com.tiagoaramos.estoque.view.utils.MysqlSystemExitListenner;
 
 /**
  * The application's main frame.
@@ -54,11 +54,14 @@ public class ControleEstoqueView extends JFrame {
     public static UsuarioModel usuarioCorrente;
     
     
+    
     public ControleEstoqueView() {
     	super();
     	AberturaCaixaDAO dao = AberturaCaixaDAO.getInstance();
     	AberturaCaixaModel model = dao.buscarPorData(new Date());
     	String valor = null;
+    	
+    	addWindowListener(new MysqlSystemExitListenner());
     	
     	if(model != null)
     		valor = model.getValorInicial().toString();
@@ -91,8 +94,8 @@ public class ControleEstoqueView extends JFrame {
     	try {
     		this.setSize(800, 600);
     		this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        	setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-//        	UIManager.setLookAndFeel(new QuaquaLookAndFeel());
+//        	setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        	
         	
         	JMenuBar mbMenu = montaMenuAplicacao();
         	mainPanel = new JPanel();
@@ -111,8 +114,11 @@ public class ControleEstoqueView extends JFrame {
 			
     		System.exit(0);
 		}
+    
     	
     }
+    
+    
     
     private JMenuBar montaMenuAplicacao() {
     	

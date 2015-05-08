@@ -84,7 +84,7 @@ public class SaidaProdutoDAO extends DAO<SaidaProdutoModel> {
 				+ "                      B.enpid codigo, "
 				+ "                      B.enpquantidade quantidade, "
 				+ "                      B.enppreco preco, "
-				+ "                      (B.enpquantidade * B.enppreco * -1) total, "
+				+ "                      if(A.enttipo = 5 ,0,(B.enpquantidade * B.enppreco * -1)) total, "
 				+ "                      C.pronome pronome, "
 				+ "                      a.entusuid usuid "
 				+ "                 FROM entradamodel A, entradaprodutomodel B, produtomodel C "

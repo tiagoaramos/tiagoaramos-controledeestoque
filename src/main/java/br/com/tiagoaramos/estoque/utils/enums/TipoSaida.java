@@ -2,11 +2,11 @@ package br.com.tiagoaramos.estoque.utils.enums;
 
 public enum TipoSaida {
 
-	CARTAO(0, "Venda - Cartão "), 
+	CARTAO(0, "Venda - Cartï¿½o "), 
 	DINHEIRO(1, "Venda - Dinheiro "), 
 	TROCA(2, "Troca"), 
 	BAIXA(3, "Baixa"), 
-	DOACAO(4, "Doação"),
+	DOACAO(4, "Doaï¿½ï¿½o"),
 	USO_CONSUMO(5, "Uso Consumo");
 
 	private Integer CODIGO;
