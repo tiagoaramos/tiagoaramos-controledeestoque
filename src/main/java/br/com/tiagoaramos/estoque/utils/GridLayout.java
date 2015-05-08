@@ -35,7 +35,7 @@ public class GridLayout  {
 	public void add(String label, JComponent componente) {
 		this.add(new JLabel(label), componente);
 	}
-	
+
 	public void add(JLabel label, JComponent componente) {
 		GridBagConstraints cons = getConstrainsts();
 		cons.fill = GridBagConstraints.NONE;
@@ -48,6 +48,30 @@ public class GridLayout  {
 		cons.weightx = 1;
 		cons.gridwidth = GridBagConstraints.REMAINDER;
 		this.getContentPane().add(componente, cons);
+	}
+	public void add(JLabel label, JComponent componente, JLabel label2, JComponent componente2) {
+		GridBagConstraints cons = getConstrainsts();
+		cons.fill = GridBagConstraints.NONE;
+		cons.anchor = GridBagConstraints.NORTHWEST;
+		cons.weightx = 0;
+		cons.gridwidth = 1;
+		this.getContentPane().add(label, cons);
+
+		cons.fill = GridBagConstraints.BOTH;
+		cons.weightx = 1;
+		cons.gridwidth = GridBagConstraints.REMAINDER;
+		this.getContentPane().add(componente, cons);
+		
+		cons.fill = GridBagConstraints.NONE;
+		cons.anchor = GridBagConstraints.NORTHWEST;
+		cons.weightx = 0;
+		cons.gridwidth = 1;
+		this.getContentPane().add(label2, cons);
+
+		cons.fill = GridBagConstraints.BOTH;
+		cons.weightx = 1;
+		cons.gridwidth = GridBagConstraints.REMAINDER;
+		this.getContentPane().add(componente2, cons);
 	}
 
 	private GridBagConstraints getConstrainsts() {
@@ -100,6 +124,27 @@ public class GridLayout  {
 		cons.gridwidth = GridBagConstraints.REMAINDER;
 		this.getContentPane().add(componente, cons);
 	}
+	
+	/**
+	 * Adiciona um label e um componente horizontalmente. O componente ocupará
+	 * todo o reto da tela
+	 * 
+	 * @param label
+	 *            String que irá aparecer no label
+	 * @param componente
+	 *            Componente de edição
+	 */
+	public void add(GridLayout componente) {
+		GridBagConstraints cons = getConstrainsts();
+		cons.anchor = GridBagConstraints.NORTHWEST;
+		cons.weighty = 1;
+		cons.weightx = 1;
+		cons.gridheight = GridBagConstraints.REMAINDER;
+		cons.fill = GridBagConstraints.BOTH;
+		cons.gridwidth = GridBagConstraints.REMAINDER;
+		this.getContentPane().add(componente.getContentPane(), cons);
+	}
+	
 	
 	/**
 	 * Adiciona um label e um componente horizontalmente. O componente ocupará

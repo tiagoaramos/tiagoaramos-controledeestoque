@@ -5,14 +5,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 
 import net.sf.jasperreports.engine.JRResultSetDataSource;
 
 import org.hibernate.impl.SessionImpl;
 
 import br.com.tiagoaramos.estoque.control.relatorio.GerarRelatorio;
+import br.com.tiagoaramos.estoque.model.ProdutoModel;
 import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
 import br.com.tiagoaramos.estoque.utils.enums.TipoSaida;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
@@ -77,7 +80,7 @@ public class SaidaProdutoDAO extends DAO<SaidaProdutoModel> {
 				+ "              (SELECT A.entdata data, "
 				+ "                      '1' tipoT, "
 				+ "                      A.entid id, "
-				+ "                      A.enttipo tipo, "
+				+ "                     ifnull(A.enttipo,0) tipo, "
 				+ "                      B.enpid codigo, "
 				+ "                      B.enpquantidade quantidade, "
 				+ "                      B.enppreco preco, "
@@ -174,6 +177,12 @@ public class SaidaProdutoDAO extends DAO<SaidaProdutoModel> {
 		GerarRelatorio gerar = new GerarRelatorio();
 		gerar.gerarRelatorio(new JRResultSetDataSource(rs), null, "fechamentocaixa", "fechamento_"+new SimpleDateFormat("yyyyMMdd").format(cal.getTime()));
 		
+	}
+
+	public ArrayList<SaidaProdutoModel> buscarPorProduto(ProdutoModel produto){
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("produto", produto);
+		return (ArrayList<SaidaProdutoModel>) executaQueryList(map, "SELECT c FROM SaidaProdutoModel c  where c.produto = :produto");
 	}
 
 }

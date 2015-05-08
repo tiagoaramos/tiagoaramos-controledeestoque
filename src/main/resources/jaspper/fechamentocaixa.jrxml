@@ -1,30 +1,24 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
-			  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-			  xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
-			  name="fechamentocaixa" 
-			  language="groovy" 
-			  pageWidth="595" 
-			  pageHeight="842" 
-			  columnWidth="535" 
-			  leftMargin="20" 
-			  rightMargin="20" 
-			  topMargin="20" 
-			  bottomMargin="20">
-			  
-	<parameter name="dataSolicitacao" class="java.util.Date"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="fechamentocaixa" language="groovy" pageWidth="595" pageHeight="842" columnWidth="535" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="8d366870-cb15-49ca-9d45-dce3fc84599a">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="dataSolicitacao" class="java.util.Date">
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
 	<parameter name="loja" class="java.lang.String">
-		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+		<defaultValueExpression><![CDATA["1"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT if(tipoT IS NULL, '0', tipoT) tipoT,
-       id,W
+       id,
        data,
        tipo,
        codigo,
        quantidade,
        preco,
        pronome,
+       usuid,
        total
   FROM (  SELECT data,
                  tipoT,
@@ -33,120 +27,109 @@
                  codigo,
                  quantidade,
                  preco,
-                 pronome,
-                 sum(total) total
-            FROM ((SELECT A.saidata data,
-                          '0' tipoT,
-                          A.saiid id,
-                          A.saitipo tipo,
-                          B.sapid codigo,
-                          B.sapquantidade quantidade,
-                          B.sappreco preco,
-                          (B.sapquantidade * B.sappreco) total,
-                          C.pronome pronome
-                     FROM saidamodel A, saidaprodutomodel B, produtomodel C
-                    WHERE     A.saiid = B.sapsaiid
-                          AND B.sapproid = C.proid
-                          AND day(a.saidata) = day(curdate()))
-                  UNION
-                  (SELECT A.entdata data,
-                          '1' tipoT,
-                          A.entid id,
-                          A.enttipo tipo,
-                          B.enpid codigo,
-                          B.enpquantidade quantidade,
-                          B.enppreco preco,
-                          (B.enpquantidade * B.enppreco * -1) total,
-                          C.pronome pronome
-                     FROM entradamodel A, entradaprodutomodel B, produtomodel C
-                    WHERE     A.entid = B.enpentid
-                          AND B.enpproid = C.proid
-                          AND day(a.entdata) = day(curdate()))
-                  UNION
-                  (SELECT A.retdata data,
-                          '2' tipoT,
-                          A.retid id,
-                          "1" tipo,
-                          A.retid codigo,
-                          0 quantidade,
-                          (a.retvalor * -1) preco,
-                          (a.retvalor * -1) total,
-                          a.retdescricao pronome
-                     FROM retiradamodel A where  day(a.retdata) = day(curdate()) )) view
-        GROUP BY data,
-                 tipoT,
-                 id,
-                 tipo,
-                 codigo,
-                 quantidade,
-                 preco,
-                 pronome WITH ROLLUP) view
- WHERE (    tipoT IS NOT NULL
-        AND id IS NOT NULL
-        AND data IS NOT NULL
-        AND tipo IS NOT NULL
-        AND codigo IS NOT NULL
-        AND quantidade IS NOT NULL
-        AND preco IS NOT NULL
-        AND pronome IS NOT NULL)
-       OR(    tipoT IS NULL
-          AND id IS NULL
-          AND data IS NULL
-          AND tipo IS NULL
-          AND codigo IS NULL
-          AND quantidade IS NULL
-          AND preco IS NULL
-          AND pronome IS NULL)]]>
+             pronome,
+             usuid,
+             sum(total) total
+        FROM ((SELECT A.saidata data,
+                      '0' tipoT,
+                      A.saiid id,
+                      A.saitipo tipo,
+                      B.sapid codigo,
+                      B.sapquantidade quantidade,
+                      B.sappreco preco,
+                      (B.sapquantidade * B.sappreco) total,
+                      C.pronome pronome,
+                      a.saiusuid usuid
+                 FROM saidamodel A, saidaprodutomodel B, produtomodel C
+                WHERE     A.saiid = B.sapsaiid
+                      AND B.sapproid = C.proid
+                      AND day(a.saidata) = day($P{dataSolicitacao}))
+              UNION
+              (SELECT A.entdata data,
+                      '1' tipoT,
+                      A.entid id,
+                      ifnull(A.enttipo,0) tipo,
+                      B.enpid codigo,
+                      B.enpquantidade quantidade,
+                      B.enppreco preco,
+                      (B.enpquantidade * B.enppreco * -1) total,
+                      C.pronome pronome,
+                      a.entusuid usuid
+                 FROM entradamodel A, entradaprodutomodel B, produtomodel C
+                WHERE     A.entid = B.enpentid
+                      AND B.enpproid = C.proid
+                      AND day(a.entdata) = day($P{dataSolicitacao}))
+              UNION
+              (SELECT A.retdata data,
+                      '2' tipoT,
+                      A.retid id,
+                      '1' tipo,
+                      A.retid codigo,
+                      0 quantidade,
+                      (a.retvalor * -1) preco,
+                      (a.retvalor * -1) total,
+                      a.retdescricao pronome,
+                      a.retusuid usuid
+                 FROM retiradamodel A where  day(a.retdata) = day($P{dataSolicitacao}) )) view
+    WHERE usuid = $P{loja}
+    GROUP BY data,               tipoT,
+             id,               tipo,
+             codigo,               quantidade,
+             preco,
+             usuid,
+             pronome WITH ROLLUP) view
+ WHERE (    t
+    ipoT IS NOT NULL      AND id IS NOT NULL
+    AND data IS NOT NULL      AND tipo IS NOT NULL
+    AND codigo IS NOT NULL
+    AND quantidade IS NOT NULL
+    AND preco IS NOT NULL
+    AND pronome IS NOT NULL)
+
+OR(    tipoT IS NULL
+      AND id IS NULL        AND data IS NULL
+      AND tipo IS NULL        AND codigo IS NULL
+      AND quantidade IS NULL        AND preco IS NULL
+      AND pronome IS NULL)]]>
 	</queryString>
-	<field name="tipoT" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="tipoT" class="java.lang.String"/>
 	<field name="id" class="java.lang.Long">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="data" class="java.sql.Timestamp">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="tipo" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="codigo" class="java.lang.Long">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="quantidade" class="java.lang.Long">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="preco" class="java.math.BigDecimal">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="tipo" class="java.lang.Object"/>
+	<field name="codigo" class="java.lang.Long"/>
+	<field name="quantidade" class="java.lang.Long"/>
+	<field name="preco" class="java.math.BigDecimal"/>
 	<field name="pronome" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="total" class="java.math.BigDecimal">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
+	<field name="usuid" class="java.lang.Long"/>
+	<field name="total" class="java.math.BigDecimal"/>
 	<group name="saidata">
 		<groupExpression><![CDATA[$F{data}]]></groupExpression>
 		<groupHeader>
 			<band height="13">
-				<textField isBlankWhenNull="false" hyperlinkType="None">
-					<reportElement mode="Opaque" x="0" y="0" width="555" height="13" forecolor="#006699" backcolor="#E6E6E6"/>
+				<textField isBlankWhenNull="false">
+					<reportElement mode="Opaque" x="0" y="0" width="555" height="13" forecolor="#006699" backcolor="#E6E6E6" uuid="adaad2de-d9cb-4fa5-9ee6-ba85442335d0"/>
 					<textElement>
 						<font size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA["   " + ($F{data} == null ? "Total do dia" : new SimpleDateFormat("H:mm:ss").format($F{data}) )]]></textFieldExpression>
+					<textFieldExpression><![CDATA["   " + ($F{data} == null ? "Total do dia" : new SimpleDateFormat("H:mm:ss").format($F{data}) )]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement x="222" y="0" width="1" height="13"/>
+					<reportElement x="222" y="0" width="1" height="13" uuid="5e3bec91-ab61-47a6-b616-769c1252e3d5"/>
 				</line>
 				<line>
-					<reportElement x="111" y="0" width="1" height="13"/>
+					<reportElement x="111" y="0" width="1" height="13" uuid="31697dad-3901-4cd8-a0d7-eea0f7802047"/>
 				</line>
 				<line>
-					<reportElement x="444" y="0" width="1" height="13"/>
+					<reportElement x="444" y="0" width="1" height="13" uuid="daa283a9-bf91-46b7-bac3-33a7b2e53802"/>
 				</line>
 				<line>
-					<reportElement x="333" y="0" width="1" height="13"/>
+					<reportElement x="333" y="0" width="1" height="13" uuid="3eb77f6e-3c2b-41bf-97bc-5915c17e8413"/>
 				</line>
 			</band>
 		</groupHeader>
@@ -160,32 +143,32 @@
 	<title>
 		<band height="38">
 			<frame>
-				<reportElement mode="Opaque" x="-20" y="-20" width="595" height="58" backcolor="#006699"/>
+				<reportElement mode="Opaque" x="-20" y="-20" width="595" height="58" backcolor="#006699" uuid="d5803ce0-833d-495e-8097-fc8c1dc8323f"/>
 				<staticText>
-					<reportElement x="20" y="5" width="360" height="43" forecolor="#FFFFFF"/>
+					<reportElement x="20" y="5" width="360" height="43" forecolor="#FFFFFF" uuid="862c3b42-ca57-477b-9ba4-e7a3374d61b4"/>
 					<textElement>
 						<font size="24" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Fechamento diario]]></text>
 				</staticText>
 				<staticText>
-					<reportElement x="395" y="13" width="180" height="20" forecolor="#FFFFFF"/>
+					<reportElement x="395" y="13" width="180" height="20" forecolor="#FFFFFF" uuid="fb546621-1038-4190-b21c-867e0cd54953"/>
 					<textElement textAlignment="Right">
 						<font size="14" isBold="false"/>
 					</textElement>
 					<text><![CDATA[Fechamento de caixa]]></text>
 				</staticText>
-				<textField pattern="EEEEE dd MMMMM yyyy" hyperlinkType="None">
-					<reportElement x="395" y="33" width="180" height="13"/>
+				<textField pattern="EEEEE dd MMMMM yyyy">
+					<reportElement x="395" y="33" width="180" height="13" uuid="c55491f2-b3cf-42a3-9183-11e94af1d97f"/>
 					<textElement textAlignment="Right"/>
-					<textFieldExpression class="java.util.Date"><![CDATA[$P{dataSolicitacao}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{dataSolicitacao}]]></textFieldExpression>
 				</textField>
-				<textField pattern="EEEEE dd MMMMM yyyy" hyperlinkType="None">
-					<reportElement x="22" y="33" width="210" height="25" forecolor="#FFFFFF"/>
+				<textField pattern="EEEEE dd MMMMM yyyy">
+					<reportElement x="22" y="33" width="210" height="25" forecolor="#FFFFFF" uuid="97bdeecd-5d07-4431-86a9-81642ac25870"/>
 					<textElement textAlignment="Right">
 						<font size="14"/>
 					</textElement>
-					<textFieldExpression class="java.lang.String"><![CDATA[$P{loja}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$P{loja}]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>
@@ -196,35 +179,35 @@
 	<columnHeader>
 		<band height="13">
 			<staticText>
-				<reportElement mode="Opaque" x="0" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699"/>
+				<reportElement mode="Opaque" x="0" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699" uuid="66466de5-5139-4006-99e3-bec9d0280c35"/>
 				<textElement textAlignment="Center">
 					<font size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Tipo]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="333" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699"/>
+				<reportElement mode="Opaque" x="333" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699" uuid="4e8ff615-45b2-4733-8d32-ec7fa3a4c751"/>
 				<textElement textAlignment="Center">
 					<font size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Quantidade]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="222" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699"/>
+				<reportElement mode="Opaque" x="222" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699" uuid="4fc99c0f-dcad-4d81-8b7f-26389b540d4d"/>
 				<textElement textAlignment="Center">
 					<font size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Preço]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="111" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699"/>
+				<reportElement mode="Opaque" x="111" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699" uuid="c3176936-277e-480b-8e1a-d8dd911eace2"/>
 				<textElement textAlignment="Center">
 					<font size="10" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Produto / Desc.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="444" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699"/>
+				<reportElement mode="Opaque" x="444" y="0" width="111" height="13" forecolor="#E6E6E6" backcolor="#006699" uuid="d56458c7-c7a4-443a-916b-c7f6320a47f9"/>
 				<textElement textAlignment="Center">
 					<font size="10" isBold="true"/>
 				</textElement>
@@ -234,117 +217,117 @@
 	</columnHeader>
 	<detail>
 		<band height="13">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="0" y="0" width="111" height="13">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="0" y="0" width="111" height="13" uuid="8cf37895-b7e1-4ca6-b070-b8c8d6ff9597">
 					<printWhenExpression><![CDATA[$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{id} != null ? 
-$F{tipoT}.equals("0") ? br.com.tiagoaramos.estoque.utils.enums.TipoSaida.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() : 
-$F{tipoT}.equals("1") ? br.com.tiagoaramos.estoque.utils.enums.TipoEntrada.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() : 
-$F{tipoT}.equals("2") ? "Retirada" : 
-"" : 
+				<textFieldExpression><![CDATA[$F{id} != null ?
+$F{tipoT}.equals("0") ? br.com.tiagoaramos.estoque.utils.enums.TipoSaida.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() :
+$F{tipoT}.equals("1") ? br.com.tiagoaramos.estoque.utils.enums.TipoEntrada.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() :
+$F{tipoT}.equals("2") ? "Retirada" :
+"" :
 "Total"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="333" y="0" width="111" height="13">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="333" y="0" width="111" height="13" uuid="4a8a63db-d3de-4892-824d-2c3944c7c35d">
 					<printWhenExpression><![CDATA[$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{quantidade} == 0 ? null : $F{quantidade}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantidade} == 0 ? null : $F{quantidade}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="222" y="0" width="111" height="13">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="222" y="0" width="111" height="13" uuid="b7063fb4-0139-461b-a5cc-0911a5ae3cb6">
 					<printWhenExpression><![CDATA[$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{preco}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{preco}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="111" y="0" width="111" height="13">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="111" y="0" width="111" height="13" uuid="3e08a23d-29c1-4e26-9582-950d72229a67">
 					<printWhenExpression><![CDATA[$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{pronome}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pronome}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="444" y="0" width="111" height="13" backcolor="#FFFFFF">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="444" y="0" width="111" height="13" backcolor="#FFFFFF" uuid="98425435-0f6a-446d-ba80-4571f4fcd33e">
 					<printWhenExpression><![CDATA[$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{total}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="0" y="0" width="111" height="13" backcolor="#FF9999">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="0" y="0" width="111" height="13" backcolor="#FF9999" uuid="0d29c811-77ed-49fb-8f0a-3c6ec6f02b0d">
 					<printWhenExpression><![CDATA[!$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{id} != null ? 
-$F{tipoT}.equals("0") ? br.com.tiagoaramos.estoque.utils.enums.TipoSaida.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() : 
-$F{tipoT}.equals("1") ? br.com.tiagoaramos.estoque.utils.enums.TipoEntrada.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() : 
-$F{tipoT}.equals("2") ? "Retirada" : 
-"" : 
+				<textFieldExpression><![CDATA[$F{id} != null ?
+$F{tipoT}.equals("0") ? br.com.tiagoaramos.estoque.utils.enums.TipoSaida.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() :
+$F{tipoT}.equals("1") ? br.com.tiagoaramos.estoque.utils.enums.TipoEntrada.values()[new Integer($F{tipo}).intValue()].getDESCRICAO() :
+$F{tipoT}.equals("2") ? "Retirada" :
+"" :
 "Total"]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="333" y="0" width="111" height="13" backcolor="#FF9999">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="333" y="0" width="111" height="13" backcolor="#FF9999" uuid="34bf91ab-1222-4de7-a0e0-463a46c0d548">
 					<printWhenExpression><![CDATA[!$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.lang.Integer"><![CDATA[$F{quantidade} == 0 ? null : $F{quantidade}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{quantidade} == 0 ? null : $F{quantidade}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="222" y="0" width="111" height="13" backcolor="#FF9999">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="222" y="0" width="111" height="13" backcolor="#FF9999" uuid="f7d216d9-f84f-4b41-b43e-613b32a99254">
 					<printWhenExpression><![CDATA[!$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{preco}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{preco}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="111" y="0" width="111" height="13" backcolor="#FF9999">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="111" y="0" width="111" height="13" backcolor="#FF9999" uuid="66f9121b-794a-4c8d-a29b-042339d924f7">
 					<printWhenExpression><![CDATA[!$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{pronome}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{pronome}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true" hyperlinkType="None">
-				<reportElement mode="Opaque" x="444" y="0" width="111" height="13" backcolor="#FF9999">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement mode="Opaque" x="444" y="0" width="111" height="13" backcolor="#FF9999" uuid="36c43fae-4afe-4c31-9be1-c254f96acdb5">
 					<printWhenExpression><![CDATA[!$F{tipoT}.equals("0")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression class="java.math.BigDecimal"><![CDATA[$F{total}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="222" y="0" width="1" height="13"/>
+				<reportElement x="222" y="0" width="1" height="13" uuid="26045711-2e4b-41b6-9142-3a8ae069ef41"/>
 			</line>
 			<line>
-				<reportElement x="111" y="0" width="1" height="13"/>
+				<reportElement x="111" y="0" width="1" height="13" uuid="254817f1-8621-436a-8cd9-318978d60ecb"/>
 			</line>
 			<line>
-				<reportElement x="333" y="0" width="1" height="13"/>
+				<reportElement x="333" y="0" width="1" height="13" uuid="b4af6042-0720-4108-8494-5abe1c802282"/>
 			</line>
 			<line>
-				<reportElement x="444" y="0" width="1" height="13"/>
+				<reportElement x="444" y="0" width="1" height="13" uuid="63b1ec17-39e3-4f76-8fcb-bc05422e7a90"/>
 			</line>
 		</band>
 	</detail>
@@ -353,20 +336,18 @@ $F{tipoT}.equals("2") ? "Retirada" :
 	</columnFooter>
 	<pageFooter>
 		<band height="13">
-			<textField hyperlinkType="None">
-				<reportElement mode="Opaque" x="0" y="0" width="515" height="13" backcolor="#E6E6E6"/>
+			<textField>
+				<reportElement mode="Opaque" x="0" y="0" width="515" height="13" backcolor="#E6E6E6" uuid="d57a25e3-be6a-4971-9e70-ab3cca2f80d8"/>
 				<textElement textAlignment="Right"/>
-				<textFieldExpression class="java.lang.String"><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Page "+$V{PAGE_NUMBER}+" of"]]></textFieldExpression>
 			</textField>
-			<textField hyperlinkType="None">
-				<reportElement mode="Opaque" x="515" y="0" width="40" height="13" backcolor="#E6E6E6"/>
-				<textElement/>
-				<textFieldExpression class="java.lang.String"><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			<textField>
+				<reportElement mode="Opaque" x="515" y="0" width="40" height="13" backcolor="#E6E6E6" uuid="e95bff82-8418-402d-8123-bde3acc5a710"/>
+				<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
-			<textField pattern="EEEEE dd MMMMM yyyy" hyperlinkType="None">
-				<reportElement x="0" y="0" width="299" height="13"/>
-				<textElement/>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{dataSolicitacao}]]></textFieldExpression>
+			<textField pattern="EEEEE dd MMMMM yyyy">
+				<reportElement x="0" y="0" width="299" height="13" uuid="d95f33ef-bb84-4050-9bd5-6c7a788403a0"/>
+				<textFieldExpression><![CDATA[$P{dataSolicitacao}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageFooter>

@@ -1,6 +1,10 @@
 package br.com.tiagoaramos.estoque.model.dao;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
+import br.com.tiagoaramos.estoque.model.ProdutoModel;
 
 
 public class EntradaProdutoDAO  extends DAO<EntradaProdutoModel>{
@@ -21,6 +25,13 @@ public class EntradaProdutoDAO  extends DAO<EntradaProdutoModel>{
 			EntradaProdutoDAO.instacia = new EntradaProdutoDAO();
 		}
 		return instacia;
+	}
+	
+
+	public ArrayList<EntradaProdutoModel> buscarPorProduto(ProdutoModel produto){
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put("produto", produto);
+		return (ArrayList<EntradaProdutoModel>) executaQueryList(map, "SELECT c FROM EntradaProdutoModel c  where c.produto = :produto");
 	}
 	
 }

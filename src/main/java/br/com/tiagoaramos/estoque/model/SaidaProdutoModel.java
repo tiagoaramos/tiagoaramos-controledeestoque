@@ -1,6 +1,7 @@
 package br.com.tiagoaramos.estoque.model;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +16,7 @@ import javax.persistence.ManyToOne;
  * @created 17-set-2009 20:56:20
  */
 @Entity
-public class SaidaProdutoModel implements Model  {
+public class SaidaProdutoModel implements MovimetaProdutoIf  {
 	/**
 	 * 
 	 */
@@ -77,6 +78,11 @@ public class SaidaProdutoModel implements Model  {
 
 	public void setSaida(SaidaModel saida) {
 		this.saida = saida;
+	}
+
+	@Override
+	public Date getData() {
+		return getSaida().getData();
 	}
 	
 }

@@ -248,6 +248,7 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 		model.setEstoqueAtual(new Integer(jtfEstoqueProduto.getText()));
 		model.setCategoria((CategoriaProdutoModel) cmbCategoria.getSelectedItem());
 		model.setFornecedor((FornecedorModel) cmbFornecedor.getSelectedItem());
+		model.setSaldoInicial(model.getEstoqueAtual());
 		
 		try {
 			if (model.getId() != null && model.getId().intValue() > 0) {

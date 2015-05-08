@@ -24,7 +24,9 @@ import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroCategori
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroFornecedor;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroProduto;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroUsuario;
+import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuKardexProduto;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuMovimentacaoEntrada;
+import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuMovimentacaoProducao;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuMovimentacaoRetirada;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuMovimentacaoSaida;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuMovimentacaoVenda;
@@ -162,10 +164,15 @@ public class ControleEstoqueView extends JFrame {
         miCadRetirada.setText("Retirada");  
         miCadRetirada.addActionListener(new ActMenuMovimentacaoRetirada(this));   
         
+        JMenuItem miCadProducao = new JMenuItem();
+        miCadProducao.setText("Produção");  
+        miCadProducao.addActionListener(new ActMenuMovimentacaoProducao(this));   
+        
         jmMovimentacao.add(miCadVendaProduto);
         jmMovimentacao.add(miCadSaidaProduto);
         jmMovimentacao.add(miCadEntradaProduto);
         jmMovimentacao.add(miCadRetirada);
+        jmMovimentacao.add(miCadProducao);
         mbMenu.add(jmMovimentacao);
         
         JMenuItem jmCadastro = new JMenu();
@@ -200,7 +207,17 @@ public class ControleEstoqueView extends JFrame {
         miCadCategoria.setText("Relatórios diários");  
         miCadCategoria.addActionListener(new ActMenuRelatorio(this));   
         jmCadastro.add(miCadCategoria);
+        
+
+        miCadUsuario = new JMenuItem();
+        miCadUsuario.setText("kardex Produto");  
+        miCadUsuario.addActionListener(new ActMenuKardexProduto(this));   
+        jmCadastro.add(miCadUsuario);
+        
+        
         mbMenu.add(jmCadastro);
+        
+        
                 
         return mbMenu; 
         

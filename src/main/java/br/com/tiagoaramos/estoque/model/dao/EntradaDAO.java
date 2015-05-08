@@ -29,5 +29,6 @@ public class EntradaDAO  extends DAO<EntradaModel>{
 		entrada.setUsuario(ControleSessaoUtil.usuarioLogado);
 		super.persiste(entrada);
 	}
-	
+
+
 }

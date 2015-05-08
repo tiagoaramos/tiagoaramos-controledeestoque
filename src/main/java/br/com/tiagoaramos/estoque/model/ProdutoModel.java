@@ -30,6 +30,8 @@ public class ProdutoModel implements Model  {
 	private String identificador;
 	@Column(name="proestoque")
 	private Integer estoqueAtual;
+	@Column(name="prosaldoinicial")
+	private Integer saldoInicial;
 	@Column(name="pronome")
 	private String nome;
 	@Column(name="propreco")
@@ -138,6 +140,14 @@ public class ProdutoModel implements Model  {
 
 	public void setIdentificador(String identificador) {
 		this.identificador = identificador;
+	}
+
+	public Integer getSaldoInicial() {
+		return saldoInicial;
+	}
+
+	public void setSaldoInicial(Integer saldoInicial) {
+		this.saldoInicial = saldoInicial;
 	}
 
 

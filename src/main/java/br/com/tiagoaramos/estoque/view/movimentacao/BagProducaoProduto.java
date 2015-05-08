@@ -24,11 +24,13 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.persistence.EntityManager;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
@@ -48,20 +50,29 @@ import javax.swing.table.DefaultTableModel;
 import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
 import br.com.tiagoaramos.estoque.model.EntradaModel;
 import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
+import br.com.tiagoaramos.estoque.model.MovimetaProdutoIf;
+import br.com.tiagoaramos.estoque.model.ProducaoModel;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
+import br.com.tiagoaramos.estoque.model.SaidaModel;
+import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
 import br.com.tiagoaramos.estoque.model.dao.EntradaDAO;
-import br.com.tiagoaramos.estoque.model.dao.EntradaProdutoDAO;
+import br.com.tiagoaramos.estoque.model.dao.ProducaoProdutoDAO;
 import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
+import br.com.tiagoaramos.estoque.model.dao.SaidaDAO;
 import br.com.tiagoaramos.estoque.utils.GridLayout;
 import br.com.tiagoaramos.estoque.utils.enums.TipoEntrada;
+import br.com.tiagoaramos.estoque.utils.enums.TipoProducao;
+import br.com.tiagoaramos.estoque.utils.enums.TipoSaida;
 import br.com.tiagoaramos.estoque.view.CadastroBagAb;
 import br.com.tiagoaramos.estoque.view.utils.BagPesquisarProduto;
+import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
+import br.com.tiagoaramos.estoque.view.utils.HibernateUtils;
 
 /**
  * 
  * @author tiago
  */
-public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
+public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 
 	/**
 	 * 
@@ -84,22 +95,35 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 	private JLabel lbVlPrecoCompra;
 
 	private ProdutoModel produto;
+	private BigDecimal custoTotal;
+	private BigDecimal custoUnitario;
 	private String codigoProduto;
 	private Border bordaPadrao;
-
+	
+	private JLabel lbVlTotal;
+	private JLabel lbVlUnit;
+	private JLabel lbVlVenda;
 	
 	private JTextField jtfCodigoProduto;
 	private JFormattedTextField jtfQuantidadeProduto;
-	private JFormattedTextField jtfValorCompra;
 	private JComboBox cmbTipoEntrada;
 	private JButton jbtPesquisar;
 	private JButton jbtFinalizar;
 	private EntradaModel entrada;
+	private SaidaModel saida;
 	private ProdutoDAO produtoDAO;
 	
 	private EntradaDAO compraDAO;
+	private SaidaDAO saidaDAO;
 
-	public BagEntradaProduto() {
+	private ProducaoProdutoDAO producaoDAO;
+
+	private int qtdTotalProduzida;
+
+	private JFormattedTextField jtfValorMargem;
+	
+
+	public BagProducaoProduto() {
 		try {			
 			initComponents();			
 		} catch (ParseException e) {
@@ -108,8 +132,12 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 	}
 
 	protected void initComponents() throws ParseException {
-		super.initComponents(new EntradaProdutoModel(), EntradaProdutoDAO.getInstance());
+		super.initComponents(null, null);
 
+		custoTotal = new BigDecimal(0);
+		custoUnitario = new BigDecimal(0);
+		qtdTotalProduzida = 0;
+		
 		panelEsquerda = new JPanel();
 		panelDireita = new JPanel();
 		panelDireita.setBackground(Color.WHITE);
@@ -117,13 +145,19 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 		gridPanelEsquerdo = new GridLayout(panelEsquerda);
 		gridPanelDireita = new GridLayout(panelDireita);
 		
-			lista = new LinkedList<EntradaProdutoModel>();
+			lista = new LinkedList<MovimetaProdutoIf>();
 			entrada = new EntradaModel();
 			entrada.setData(new Date());
+			entrada.setComprasProdutos(new ArrayList<EntradaProdutoModel>());
+			
+			saida = new SaidaModel();
+			saida.setData(new Date());
+			saida.setProdutos(new ArrayList<SaidaProdutoModel>());
+			
 			jbtFinalizar = new JButton();
 			cmbTipoEntrada = new JComboBox();
 			
-			setName("Entrada de Produto");
+			setName("Produção de Produtos");
 	
 			jtfCodigoProduto = new JTextField();
 			jtfCodigoProduto.setName("jtfCodigoProduto");
@@ -169,11 +203,11 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 	        });
 			gridPanelEsquerdo.add("Código:",jtfCodigoProduto,jbtPesquisar);
 	
-			for (TipoEntrada tipo : TipoEntrada.values()) {
+			for (TipoProducao tipo : TipoProducao.values()) {
 				cmbTipoEntrada.addItem(tipo);
 			}
 			cmbTipoEntrada.setSelectedItem(TipoEntrada.COMPRA);
-			gridPanelEsquerdo.add("Tipo de entrada:",cmbTipoEntrada);
+			gridPanelEsquerdo.add("Tipo de produção:",cmbTipoEntrada);
 	    	
 			jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getIntegerInstance());
 			jtfQuantidadeProduto.setName("jtfQuantidadeProduto");
@@ -187,16 +221,17 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 				public void keyReleased(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER
 							&& !jtfQuantidadeProduto.getText().trim().equals("")) {
-						jtfValorCompra.requestFocus();
+						jbtSalvar.requestFocus();
 					}
 				}
 			});
 			
 			gridPanelEsquerdo.add("Quantidade:",jtfQuantidadeProduto);
 			
-			jtfValorCompra = new JFormattedTextField(new DecimalFormat("#.00"));
-			jtfValorCompra.setName("jtfValorCompra");
-			jtfValorCompra.addKeyListener(new KeyListener() {
+			jtfValorMargem = new JFormattedTextField(new DecimalFormat("#.00"));
+			jtfValorMargem.setName("jtfValorCompra");
+			jtfValorMargem.setText("2.00");
+			jtfValorMargem.addKeyListener(new KeyListener() {
 				public void keyTyped(KeyEvent e) {
 				}
 
@@ -204,13 +239,28 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 				}
 
 				public void keyReleased(KeyEvent e) {
-					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-						jbtSalvar.requestFocus();
+					if (e.getKeyCode() == KeyEvent.VK_ENTER
+							&& !jtfValorMargem.getText().trim().equals("")) {
+						alteraUnit(custoUnitario);
 					}
 				}
 			});
-			gridPanelEsquerdo.add("Valor:", jtfValorCompra);
-			
+			jtfValorMargem.addFocusListener(new FocusListener() {
+				
+				@Override
+				public void focusLost(FocusEvent e) {
+					if(!jtfValorMargem.getText().trim().equals("")){
+						alteraUnit(custoUnitario);
+						
+					}
+				}
+				
+				@Override
+				public void focusGained(FocusEvent e) {
+				}
+			});
+
+			gridPanelEsquerdo.add("Margem de venda:", jtfValorMargem);
 			
 			
 			jbtSalvar.setText("Adicionar");
@@ -218,14 +268,14 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 			
 			jpnTabela.setBorder(new TitledBorder("Produtos"));
 			tableModel = new DefaultTableModel(new Object[][] {}, new String[] {
-					"Nome", "Quantidade" }) {
+					"Nome", "Quantidade", "Tipo" }) {
 				private static final long serialVersionUID = 5622980448697494420L;
 	
 				public boolean isCellEditable(int row, int col) {
 					return false;
 				}
 			};
-			gridPanelEsquerdo.add("Ações:",jbtSalvar,jbtEditar,jbtExcluir,jbtFinalizar);
+			gridPanelEsquerdo.add("Ações:",jbtSalvar,jbtExcluir,jbtFinalizar);
 			
 			montaPanelDireito();
 			
@@ -242,13 +292,13 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 			jbtFinalizar.setText("Finalizar");
 			jbtFinalizar.addActionListener(new ActionListener() {
 	            public void actionPerformed(ActionEvent evt) {
-	                finalizarCompra();
+	                finalizarProducao();
 	            }
 	        });
 	}
 
-	private void adicionarTabela(EntradaProdutoModel compraProduto) {
-		tableModel.addRow(new Object[] { compraProduto.getProduto().getNome(),compraProduto.getQuantidade().toString()});
+	private void adicionarTabela(MovimetaProdutoIf movimentaProduto, TipoProducao tipo) {
+		tableModel.addRow(new Object[] { movimentaProduto.getProduto().getNome(), movimentaProduto.getQuantidade().toString(), tipo.getDESCRICAO()});
 	}
 
 	protected void editarModel() {
@@ -270,10 +320,32 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 
 	protected void salvarModel() {
 		
-		model.setEntrada(entrada);
-		model.setProduto(produtoDAO.buscarPorIdentificador(jtfCodigoProduto.getText()));
+		TipoProducao tipo = (TipoProducao) cmbTipoEntrada.getSelectedItem();
+		produto = produtoDAO.buscarPorIdentificador(jtfCodigoProduto.getText());
+		
+		if(tipo.equals(TipoProducao.MATERIA_PRIMA)){
+			model = new SaidaProdutoModel();
+			((SaidaProdutoModel)model).setSaida(saida);
+			saida.getProdutos().add((SaidaProdutoModel) model);
+			
+			custoTotal = custoTotal.add(new BigDecimal(produto.getPreco().doubleValue() * new Integer(jtfQuantidadeProduto.getText())));
+			
+			alteraTotal(custoTotal);
+			
+		}else if(tipo.equals(TipoProducao.PRODUTO_FINAL)){
+			model = new EntradaProdutoModel();
+			((EntradaProdutoModel)model).setEntrada(entrada);
+			entrada.getComprasProdutos().add((EntradaProdutoModel) model);
+
+			qtdTotalProduzida += new Integer(jtfQuantidadeProduto.getText()); 
+
+			
+		}
+		custoUnitario = new BigDecimal(qtdTotalProduzida > 0 ? custoTotal.doubleValue() / (double) qtdTotalProduzida : 0);
+		alteraUnit(custoUnitario);
+		
+		model.setProduto(produto);
 		model.setQuantidade(new Integer(jtfQuantidadeProduto.getText()));
-		model.setPrecoCompra(new BigDecimal((new BigDecimal(jtfValorCompra.getText().replaceAll(",", ".")).doubleValue() /( model.getQuantidade() > 0 ? model.getQuantidade() : 1))));
 
 		try {
 			if (model.getId() != null && model.getId().intValue() > 0) {
@@ -282,15 +354,14 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 				tableModel.setValueAt(model.getQuantidade().toString(), indice, 2);
 
 			} else {
-
 				lista.add(model);
-				adicionarTabela(model);
+				adicionarTabela(model, tipo );
 			}
 			limparCampos();
 			jtfCodigoProduto.requestFocus();
 			
 		} catch (Exception ex) {
-			Logger.getLogger(BagEntradaProduto.class.getName()).log(
+			Logger.getLogger(BagProducaoProduto.class.getName()).log(
 					Level.SEVERE, null, ex);
 			JOptionPane.showMessageDialog(this,
 					"Impossível adicionar o produto", "Erro",
@@ -298,38 +369,87 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 		}
 	}
 	
-	private void finalizarCompra(){
+	private void finalizarProducao(){
+		EntityManager em = HibernateUtils.getEm();
 		try {
-			entrada.setComprasProdutos(lista);
+
+		    em.getTransaction().begin();
+			
 			if(compraDAO == null)
 				compraDAO = EntradaDAO.getInstance();
 			
-			compraDAO.persiste(entrada);
-			
+			if(saidaDAO == null)
+				saidaDAO = SaidaDAO.getInstance();
+
 			if(produtoDAO == null)
 				produtoDAO = ProdutoDAO.getInstance();
 			
+			if(producaoDAO == null)
+				producaoDAO = ProducaoProdutoDAO.getInstance();
+			
+			
 			for (EntradaProdutoModel compraProdutoModel : entrada.getComprasProdutos()) {
-				ProdutoModel produto = compraProdutoModel.getProduto(); 
-				produto.setPreco(compraProdutoModel.getPrecoCompra());
-				produto.setEstoqueAtual(new Integer(produto.getEstoqueAtual().intValue() + compraProdutoModel.getQuantidade().intValue()));
+				
+				ProdutoModel produto = produtoDAO.buscarPorCodigo( compraProdutoModel.getProduto().getId());; 
+				
+				double custoMedio = produto.getPreco().doubleValue();
+				int qtdAtual = produto.getEstoqueAtual();
+				double custoTotal =qtdAtual * custoMedio;
+				
+				int qtdProduzida = compraProdutoModel.getQuantidade();
+				double custoProducao = custoUnitario.doubleValue() * qtdProduzida;
+				
+				custoTotal += custoProducao;
+				qtdAtual += qtdProduzida;
+				custoMedio = custoTotal / qtdAtual; 
+				
+				produto.setEstoqueAtual(qtdAtual);
+				produto.setPreco(new BigDecimal(custoMedio));
+				produto.setPrecoVenda(new BigDecimal(custoMedio).multiply(new BigDecimal(jtfValorMargem.getText().replaceAll("[,]", "."))));
+				
 				produtoDAO.merge(produto);
+				
+				compraProdutoModel.setPrecoCompra(produto.getPreco());
+				
 			}
+			saida.setTipo(TipoSaida.BAIXA);
+			for (SaidaProdutoModel saidaProduto : saida.getProdutos()) {
+				saidaProduto.setPrecoVenda(new BigDecimal(0));
+			}
+
+			compraDAO.persiste(entrada);
+			saidaDAO.persiste(saida);
+			
+			ProducaoModel producao = new ProducaoModel();
+			producao.setCusto(custoTotal);
+			producao.setData(new Date());
+			producao.setUsuario(ControleSessaoUtil.usuarioLogado);
+			producao.setEntrada(entrada);
+			producao.setSaida(saida);
+			
+			producaoDAO.persiste(producao);
 			
 
 			for(int i = tableModel.getRowCount() - 1 ; i >= 0 ; i--){
 				tableModel.removeRow(i);
 			}		
 			limparCampos();
-			lista = new LinkedList<EntradaProdutoModel>();
+			lista = new LinkedList<MovimetaProdutoIf>();
 
+			custoTotal = new BigDecimal(0);
+			custoUnitario = new BigDecimal(0);
+
+		    em.getTransaction().commit();
+			
 			JOptionPane.showMessageDialog(this,
-					"Compra registrada com sucesso!", "Sucesso",
+					"Produção registrada com sucesso!", "Sucesso",
 					JOptionPane.INFORMATION_MESSAGE);
 			
 		} catch (PersistenciaException e) {
 			e.printStackTrace();
-		}		
+		}finally {
+			em.close();
+		}
 	}
 	
 
@@ -337,7 +457,10 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 		indice = -1;
 		jtfCodigoProduto.setText("");
 		jtfQuantidadeProduto.setText("");
-		model = new EntradaProdutoModel();
+		
+		
+		
+		
 	}
 	
 	
@@ -359,9 +482,43 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 		lbVlPrecoCompra = new JLabel("0,00");
 		lbVlPrecoCompra.setFont(new Font("Arial",Font.PLAIN,12));
 		gridPanelDireita.add(lbPrecoCompra, lbVlPrecoCompra);
-				
+
+		lbVlTotal = new JLabel("0,0");
+		lbVlTotal.setFont(new Font("Arial", Font.PLAIN, 17));
+		
+		lbVlUnit = new JLabel("0,0");
+		lbVlUnit.setFont(new Font("Arial", Font.PLAIN, 17));
+		
+		lbVlVenda = new JLabel("0,0");
+		lbVlVenda.setFont(new Font("Arial", Font.PLAIN, 17));
+
+		
+		JPanel panelTotais = new JPanel();
+		panelTotais.setBorder(new LineBorder(Color.BLACK,3));
+		GridLayout gridTotais = new GridLayout(panelTotais);
+
+		JLabel lbTotal = new JLabel("CUSTO UNITARIO:");
+		lbTotal.setFont(new Font("Arial",Font.BOLD,17));
+		JLabel lbPrcVenda = new JLabel("PREÇO VENDA:");
+		lbPrcVenda.setFont(new Font("Arial",Font.BOLD,17));
+		gridTotais.add(lbTotal, lbVlUnit,lbPrcVenda,lbVlVenda);
+
+		lbTotal = new JLabel("CUSTO TOTAL:");
+		lbTotal.setFont(new Font("Arial",Font.BOLD,17));
+		gridTotais.add(lbTotal, lbVlTotal);
+
+		gridPanelDireita.add(gridTotais);
 	}
-	
+
+
+	private void alteraTotal(BigDecimal alt) {
+		lbVlTotal.setText( NumberFormat.getCurrencyInstance().format(alt.doubleValue()) );
+	}	
+
+	private void alteraUnit(BigDecimal alt) {
+		lbVlUnit.setText( NumberFormat.getCurrencyInstance().format(alt.doubleValue()) );
+		lbVlVenda.setText( NumberFormat.getCurrencyInstance().format(alt.doubleValue() * new BigDecimal(jtfValorMargem.getText().replaceAll("[,]", ".")).doubleValue()));
+	}
 	
 	private FocusListener codigoProdutoFocusListener = new FocusListener() {
 
@@ -415,5 +572,31 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 		lbVlNomeProduto.setText("-");
 		lbVlPrecoCompra.setText("0,00");
 		lbVlEstoque.setText("");
+	}
+	
+	protected void excluirModel() {
+		int[] l = jtbTabela.getSelectedRows();//captura as linhas selecionadas
+		if(l.length > 0){
+					
+			model = lista.get(l[0]);
+			if(model instanceof SaidaProdutoModel){
+				// saida corrigi custo total
+				
+				custoTotal = custoTotal.subtract(new BigDecimal(model.getQuantidade() * model.getProduto().getPreco().doubleValue()));
+				
+			}else{
+				qtdTotalProduzida -= model.getQuantidade();
+			}
+			custoUnitario = new BigDecimal(qtdTotalProduzida > 0 ? custoTotal.doubleValue() / (double)qtdTotalProduzida : 0);
+			
+			lista.remove(l[0]);
+			tableModel.removeRow(l[0]);
+		
+			alteraTotal(custoTotal);
+			alteraUnit(custoUnitario);
+			
+		}else{
+			JOptionPane.showMessageDialog(this, "Selecione um registro para excluir!", "Erro", JOptionPane.ERROR_MESSAGE );
+		}	
 	}
 }
