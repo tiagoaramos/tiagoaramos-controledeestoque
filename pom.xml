@@ -73,6 +73,10 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+		
+		<!-- MYSQL Embebed dependencies
+			http://www.codesenior.com/en/tutorial/How-To-Embed-Mysql-Database-Into-Java-Application
+		 -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-mxj-gpl</artifactId>
