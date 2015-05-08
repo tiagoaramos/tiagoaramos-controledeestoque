@@ -1,0 +1,1 @@
+Controle de estoque e frente de caixa feito em java SE + hibernate
