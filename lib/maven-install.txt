@@ -1,0 +1,3 @@
+mvn install:install-file -Dfile=mysql-connector-mxj-gpl-db-files-5.0.12.jar -DgroupId=mysql -DartifactId=mysql-connector-mxj-gpl-db-files -Dversion=5.0.12 -Dpackaging=jar
+mvn install:install-file -Dfile=mysql-connector-java-5.1.32.jar -DgroupId=mysql -DartifactId=mysql-connector-java -Dversion=5.1.32 -Dpackaging=jar
+mvn install:install-file -Dfile=mysql-connector-mxj-gpl-5.0.12.jar -DgroupId=mysql -DartifactId=mysql-connector-mxj-gpl -Dversion=5.0.12 -Dpackaging=jar
