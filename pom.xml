@@ -73,10 +73,8 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
-		<!-- MYSQL Embebed dependencies
-			http://www.codesenior.com/en/tutorial/How-To-Embed-Mysql-Database-Into-Java-Application
-		 -->
+
+		<!-- MYSQL Embebed dependencies http://www.codesenior.com/en/tutorial/How-To-Embed-Mysql-Database-Into-Java-Application -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-mxj-gpl</artifactId>
@@ -92,6 +90,13 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.32</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/net.sourceforge.barbecue/barbecue -->
+		<dependency>
+			<groupId>net.sourceforge.barbecue</groupId>
+			<artifactId>barbecue</artifactId>
+			<version>1.5-beta1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -120,13 +125,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<dependencies>
-					<dependency>
-						<groupId>com.oopsconsultancy</groupId>
-						<artifactId>xmltask</artifactId>
-						<version>1.16.1</version>
-					</dependency>
-				</dependencies>
+
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -164,5 +163,19 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>3rdparty</id>
+			<url>https://maven.atlassian.com/3rdparty/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+
+	</repositories>
 
 </project>

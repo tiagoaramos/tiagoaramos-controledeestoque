@@ -12,6 +12,12 @@
 package br.com.tiagoaramos.estoque.view.cadastro;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+import java.awt.print.PrinterJob;
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -19,6 +25,7 @@ import java.text.ParseException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
 import javax.swing.JOptionPane;
@@ -39,6 +46,9 @@ import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
 import br.com.tiagoaramos.estoque.utils.mascaras.MaskDecimal;
 import br.com.tiagoaramos.estoque.utils.mascaras.MaskInteiros;
 import br.com.tiagoaramos.estoque.view.CadastroBagAb;
+import br.com.tiagoaramos.estoque.view.utils.PrintableLabel;
+import net.sourceforge.barbecue.BarcodeFactory;
+import net.sourceforge.barbecue.BarcodeImageHandler;
 
 /**
  * 
@@ -58,7 +68,8 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 	private JFormattedTextField jtfEstoqueProduto;
 	private JComboBox cmbCategoria;
 	private JComboBox cmbFornecedor;
-	
+	protected JButton jbtEtiqueta;
+
 	private int flagMerge = 0;
 
 	public BagCadastroProduto() {
@@ -71,51 +82,60 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 
 	protected void initComponents() throws ParseException {
 		super.initComponents(new ProdutoModel(), ProdutoDAO.getInstance());
-		
+
 		setName("CadastroProduto");
 
+		jbtEtiqueta = new JButton();
+		jbtEtiqueta.setText("Etiqueta");
+		jbtEtiqueta.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				imprimiEtiqueta();
+			}
+		});
+		jbtEtiqueta.setEnabled(false);
+		
 		jtfIdentificadorProduto = new JTextField();
 		jtfIdentificadorProduto.setName("jtfIdentificadorProduto");
-		grid.add("Código:",jtfIdentificadorProduto);
-		
+		grid.add("Código:", jtfIdentificadorProduto);
+
 		jtfNomeProduto = new JTextField();
 		jtfNomeProduto.setName("jtfNomeProduto");
-		grid.add("Nome:",jtfNomeProduto);
+		grid.add("Nome:", jtfNomeProduto);
 
 		jtfPrecoProduto = new JFormattedTextField(new DecimalFormat("#.00"));
-		jtfPrecoProduto.addKeyListener(MaskDecimal.getInstance());  
-		grid.add("Preço:",jtfPrecoProduto);
-		
+		jtfPrecoProduto.addKeyListener(MaskDecimal.getInstance());
+		grid.add("Preço:", jtfPrecoProduto);
+
 		jtfPrecoVendaProduto = new JFormattedTextField(new DecimalFormat("#.00"));
-		jtfPrecoVendaProduto.addKeyListener(MaskDecimal.getInstance()); 
-		grid.add("Preço Venda",jtfPrecoVendaProduto);
+		jtfPrecoVendaProduto.addKeyListener(MaskDecimal.getInstance());
+		grid.add("Preço Venda", jtfPrecoVendaProduto);
 
 		jtfEstoqueProduto = new JFormattedTextField(NumberFormat.getIntegerInstance());
-		jtfEstoqueProduto.addKeyListener(MaskInteiros.getInstance()); 
-		grid.add("Estoque:",jtfEstoqueProduto);
-		
+		jtfEstoqueProduto.addKeyListener(MaskInteiros.getInstance());
+		grid.add("Estoque:", jtfEstoqueProduto);
+
 		cmbCategoria = new JComboBox();
 		cmbCategoria.addItem("selecione");
 		for (CategoriaProdutoModel categoria : CategoriaDAO.getInstance().buscarTodos()) {
-			cmbCategoria.addItem(categoria);	
+			cmbCategoria.addItem(categoria);
 		}
-		grid.add("Categoria:",cmbCategoria);
+		grid.add("Categoria:", cmbCategoria);
 
 		cmbFornecedor = new JComboBox();
 		cmbFornecedor.addItem("selecione");
 		for (FornecedorModel fornecedor : FornecedorDAO.getInstance().buscarTodos()) {
-			cmbFornecedor.addItem(fornecedor);	
+			cmbFornecedor.addItem(fornecedor);
 		}
-		grid.add("Fornecedor:",cmbFornecedor);	
-		
-		
-		grid.add("Ação:",jbtSalvar,jbtEditar,jbtExcluir);
-		
+		grid.add("Fornecedor:", cmbFornecedor);
+
+		grid.add("Ação:", jbtSalvar, jbtEditar, jbtExcluir, jbtEtiqueta);
+
 		/* fim do formulário */
 		jpnTabela.setBorder(new TitledBorder("Produtos"));
-		tableModel = new DefaultTableModel(new Object[][] {}, new String[] {
-				"Código", "Nome", "Preço", "Preço venda", "Quantidade","Categoria","Fornecedor" }) {
+		tableModel = new DefaultTableModel(new Object[][] {},
+				new String[] { "Código", "Nome", "Preço", "Preço venda", "Quantidade", "Categoria", "Fornecedor" }) {
 			private static final long serialVersionUID = 5622980448697494420L;
+
 			public boolean isCellEditable(int row, int col) {
 				if (col == 0 || col == 4 || col == 5 || col == 6)
 					return false;
@@ -130,31 +150,29 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 					model = lista.get(e.getFirstRow());
 					BigDecimal big;
 					switch (e.getColumn()) {
-						case 1:
-							model.setNome(valor);
-							break;
-						case 2:
-							try{
-								big = new BigDecimal(valor);
-								model.setPreco(big);
-							}catch (Exception e2) {
-								tableModel.setValueAt(model.getPreco().toString(),e.getFirstRow(), e.getColumn());
-								JOptionPane.showMessageDialog((Component) e.getSource(),
-										"Digite apenas números!", "Erro",
-										JOptionPane.ERROR_MESSAGE);
-							}
-							break;
-						case 3:
-							try{
-								big = new BigDecimal(valor);
-								model.setPrecoVenda(new BigDecimal(valor));
-							}catch (Exception e2) {
-								tableModel.setValueAt(model.getPrecoVenda().toString(),e.getFirstRow(), e.getColumn());
-								JOptionPane.showMessageDialog((Component) e.getSource(),
-										"Digite apenas números!", "Erro",
-										JOptionPane.ERROR_MESSAGE);
-							}
-							break;
+					case 1:
+						model.setNome(valor);
+						break;
+					case 2:
+						try {
+							big = new BigDecimal(valor);
+							model.setPreco(big);
+						} catch (Exception e2) {
+							tableModel.setValueAt(model.getPreco().toString(), e.getFirstRow(), e.getColumn());
+							JOptionPane.showMessageDialog((Component) e.getSource(), "Digite apenas números!", "Erro",
+									JOptionPane.ERROR_MESSAGE);
+						}
+						break;
+					case 3:
+						try {
+							big = new BigDecimal(valor);
+							model.setPrecoVenda(new BigDecimal(valor));
+						} catch (Exception e2) {
+							tableModel.setValueAt(model.getPrecoVenda().toString(), e.getFirstRow(), e.getColumn());
+							JOptionPane.showMessageDialog((Component) e.getSource(), "Digite apenas números!", "Erro",
+									JOptionPane.ERROR_MESSAGE);
+						}
+						break;
 					}
 
 					try {
@@ -185,9 +203,52 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 		jtbTabela.getColumnModel().getColumn(6).setPreferredWidth(200);
 		jtbTabela.getColumnModel().getColumn(6).setResizable(true);
 		preencherTabela();
-		
+
 		grid.add(jspContainer);
-	
+
+	}
+
+	protected void imprimiEtiqueta() {
+
+		PrinterJob pj = PrinterJob.getPrinterJob();
+		if (pj.printDialog()) {
+			PageFormat pf = pj.defaultPage();
+			Paper paper = pf.getPaper();
+			double width = PrintableLabel.fromCMToPPI(3.5);
+			double height = PrintableLabel.fromCMToPPI(8.8);
+			paper.setSize(width, height);
+			paper.setImageableArea(PrintableLabel.fromCMToPPI(0.25), PrintableLabel.fromCMToPPI(0.5),
+					width - PrintableLabel.fromCMToPPI(0.35), height - PrintableLabel.fromCMToPPI(1));
+			System.out.println("Before- " + PrintableLabel.dump(paper));
+			pf.setOrientation(PageFormat.PORTRAIT);
+			pf.setPaper(paper);
+			System.out.println("After- " + PrintableLabel.dump(paper));
+			System.out.println("After- " + PrintableLabel.dump(pf));
+			PrintableLabel.dump(pf);
+			PageFormat validatePage = pj.validatePage(pf);
+			System.out.println("Valid- " + PrintableLabel.dump(validatePage));
+			
+			
+			try {
+				net.sourceforge.barbecue.Barcode b = BarcodeFactory.createCode128(model.getIdentificador());
+				b.setName(model.getNome());
+				b.setResolution(72);
+
+				File source = new File(model.getIdentificador()+"_"+model.getNome()+".png");
+				if(source.isFile()) {
+					source .delete();
+				}
+				// Let the barcode image handler do the hard work
+				BarcodeImageHandler.savePNG(b, source);
+				
+				pj.setPrintable(new PrintableLabel(source), pf);
+				pj.print();
+				source.delete();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+		}
+
 	}
 
 	private void preencherTabela() {
@@ -202,8 +263,9 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 	}
 
 	private void adicionarTabela(ProdutoModel produto) {
-		tableModel.addRow(new Object[] { produto.getId().toString(),
-				produto.getNome(),produto.getPreco().toString(),produto.getPrecoVenda().toString(),produto.getEstoqueAtual().toString(),produto.getCategoria(),produto.getFornecedor() });
+		tableModel.addRow(new Object[] { produto.getId().toString(), produto.getNome(), produto.getPreco().toString(),
+				produto.getPrecoVenda().toString(), produto.getEstoqueAtual().toString(), produto.getCategoria(),
+				produto.getFornecedor() });
 	}
 
 	protected void editarModel() {
@@ -219,28 +281,29 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 			jtfEstoqueProduto.setText(model.getEstoqueAtual().toString());
 			jtfEstoqueProduto.setEnabled(false);
 			
-			for(int i = 0 ; i < cmbCategoria.getModel().getSize(); i++){
-				if(cmbCategoria.getModel().getElementAt(i).equals(model.getCategoria())){
+			jbtEtiqueta.setEnabled(true);
+
+			for (int i = 0; i < cmbCategoria.getModel().getSize(); i++) {
+				if (cmbCategoria.getModel().getElementAt(i).equals(model.getCategoria())) {
 					cmbCategoria.setSelectedIndex(i);
 					break;
 				}
 			}
-			
-			for(int i = 0 ; i < cmbFornecedor.getModel().getSize(); i++){
-				if(cmbFornecedor.getModel().getElementAt(i).equals(model.getFornecedor())){
+
+			for (int i = 0; i < cmbFornecedor.getModel().getSize(); i++) {
+				if (cmbFornecedor.getModel().getElementAt(i).equals(model.getFornecedor())) {
 					cmbFornecedor.setSelectedIndex(i);
 					break;
 				}
 			}
 		} else {
-			JOptionPane.showMessageDialog(this,
-					"Selecione um registro para editar!", "Erro",
+			JOptionPane.showMessageDialog(this, "Selecione um registro para editar!", "Erro",
 					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
 	protected void salvarModel() {
-		
+
 		model.setNome(jtfNomeProduto.getText());
 		model.setIdentificador(jtfIdentificadorProduto.getText());
 		model.setPreco(new BigDecimal(jtfPrecoProduto.getText().replaceAll(",", ".")));
@@ -249,7 +312,7 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 		model.setCategoria((CategoriaProdutoModel) cmbCategoria.getSelectedItem());
 		model.setFornecedor((FornecedorModel) cmbFornecedor.getSelectedItem());
 		model.setSaldoInicial(model.getEstoqueAtual());
-		
+
 		try {
 			if (model.getId() != null && model.getId().intValue() > 0) {
 
@@ -262,24 +325,19 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 				tableModel.setValueAt(model.getCategoria().toString(), indice, 5);
 				tableModel.setValueAt(model.getFornecedor().toString(), indice, 6);
 				flagMerge = 0;
-				JOptionPane.showMessageDialog(this,
-						"Produto atualizado com sucesso!", "Sucesso",
+				JOptionPane.showMessageDialog(this, "Produto atualizado com sucesso!", "Sucesso",
 						JOptionPane.INFORMATION_MESSAGE);
 			} else {
 				dao.persiste(model);
 				lista.add(model);
 				adicionarTabela(model);
-				JOptionPane.showMessageDialog(this,
-						"Produto salvo com sucesso!", "Sucesso",
+				JOptionPane.showMessageDialog(this, "Produto salvo com sucesso!", "Sucesso",
 						JOptionPane.INFORMATION_MESSAGE);
 			}
 			limparCampos();
 		} catch (PersistenciaException ex) {
-			Logger.getLogger(BagCadastroProduto.class.getName()).log(
-					Level.SEVERE, null, ex);
-			JOptionPane.showMessageDialog(this,
-					"Impossível gravar o produto", "Erro",
-					JOptionPane.ERROR_MESSAGE);
+			Logger.getLogger(BagCadastroProduto.class.getName()).log(Level.SEVERE, null, ex);
+			JOptionPane.showMessageDialog(this, "Impossível gravar o produto", "Erro", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -294,5 +352,6 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 		cmbFornecedor.setSelectedIndex(0);
 		jtfEstoqueProduto.setEnabled(true);
 		model = new ProdutoModel();
+		jbtEtiqueta.setEnabled(false);
 	}
 }
