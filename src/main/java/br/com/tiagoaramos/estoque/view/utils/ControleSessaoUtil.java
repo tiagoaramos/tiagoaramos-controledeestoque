@@ -21,7 +21,9 @@ import javax.swing.JTextField;
 
 import br.com.tiagoaramos.estoque.control.ControleEstoqueMain;
 import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
+import br.com.tiagoaramos.estoque.model.EmpresaModel;
 import br.com.tiagoaramos.estoque.model.UsuarioModel;
+import br.com.tiagoaramos.estoque.model.dao.EmpresaDAO;
 import br.com.tiagoaramos.estoque.model.dao.UsuarioDAO;
 import br.com.tiagoaramos.estoque.utils.GridLayout;
 import br.com.tiagoaramos.estoque.utils.enums.TipoUsuario;
@@ -37,6 +39,7 @@ public class ControleSessaoUtil {
 	static JButton jtbOk;
 	static JButton jtbCancel;
 	public static UsuarioModel usuarioLogado;
+	public static EmpresaModel empresaLogado;
 
 	static Thread threadAdmin;
 
@@ -125,6 +128,16 @@ public class ControleSessaoUtil {
 			try {
 				UsuarioDAO.getInstance().persiste(usuario);
 				usuarios.add(usuario);
+				
+				EmpresaModel empresa = new EmpresaModel();
+				empresa.setCnpj("00.000.000/0001-00");
+				empresa.setMensagem("Volte Sempre!");
+				empresa.setNome("Empresa de Teste");
+				empresa.setTelefone("(99) 9 9999-9999");
+				EmpresaDAO.getInstance().persiste(empresa);
+				
+				empresaLogado = empresa;
+				
 				JOptionPane.showMessageDialog(frLogin,
 						"Usuário padrão cadastrado.\n Login : admin + \n Senha: admin");
 			} catch (PersistenciaException e1) {
@@ -138,6 +151,8 @@ public class ControleSessaoUtil {
 				ControleEstoqueMain.mysqldResource.shutdown();
 				System.exit(-1);
 			}
+		}else {
+			empresaLogado = EmpresaDAO.getInstance().buscarTodos().get(0);
 		}
 
 		jtfLogin = new JTextField();

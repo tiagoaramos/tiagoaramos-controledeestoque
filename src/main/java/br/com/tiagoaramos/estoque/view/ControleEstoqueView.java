@@ -20,6 +20,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroCategoria;
+import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroEmpresa;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroFornecedor;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroProduto;
 import br.com.tiagoaramos.estoque.control.actionlistener.ActMenuCadastroUsuario;
@@ -36,6 +37,7 @@ import br.com.tiagoaramos.estoque.model.UsuarioModel;
 import br.com.tiagoaramos.estoque.model.dao.AberturaCaixaDAO;
 import br.com.tiagoaramos.estoque.view.cadastro.BagCadastroSenha;
 import br.com.tiagoaramos.estoque.view.movimentacao.BagVendaProduto;
+import br.com.tiagoaramos.estoque.view.utils.BalancaSystemExitListenner;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
 import br.com.tiagoaramos.estoque.view.utils.MysqlSystemExitListenner;
 
@@ -61,7 +63,9 @@ public class ControleEstoqueView extends JFrame {
     	AberturaCaixaModel model = dao.buscarPorData(new Date());
     	String valor = null;
     	
+    	
     	addWindowListener(new MysqlSystemExitListenner());
+    	addWindowListener(new BalancaSystemExitListenner());
     	
     	if(model != null)
     		valor = model.getValorInicial().toString();
@@ -184,6 +188,10 @@ public class ControleEstoqueView extends JFrame {
         JMenuItem jmCadastro = new JMenu();
         jmCadastro.setText("Cadastro");
         
+        JMenuItem miCadEmpresa = new JMenuItem();
+        miCadEmpresa.setText("Empresa");  
+        miCadEmpresa.addActionListener(new ActMenuCadastroEmpresa(this));   
+        
         JMenuItem miCadCategoria = new JMenuItem();
         miCadCategoria.setText("Categoria");  
         miCadCategoria.addActionListener(new ActMenuCadastroCategoria(this));   
@@ -200,6 +208,7 @@ public class ControleEstoqueView extends JFrame {
         miCadUsuario.setText("Usuário");  
         miCadUsuario.addActionListener(new ActMenuCadastroUsuario(this));   
 
+        jmCadastro.add(miCadEmpresa);
         jmCadastro.add(miCadCategoria);
         jmCadastro.add(miCadFornecedor);
         jmCadastro.add(miCadProduto);

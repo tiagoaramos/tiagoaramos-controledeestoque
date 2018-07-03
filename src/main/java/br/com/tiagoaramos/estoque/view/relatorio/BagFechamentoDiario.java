@@ -30,7 +30,6 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.table.DefaultTableModel;
 
-import net.sf.jasperreports.engine.JRResultSetDataSource;
 import br.com.tiagoaramos.estoque.control.relatorio.GerarRelatorio;
 import br.com.tiagoaramos.estoque.model.AberturaCaixaModel;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
@@ -43,8 +42,8 @@ import br.com.tiagoaramos.estoque.utils.enums.TipoRelatorio;
 import br.com.tiagoaramos.estoque.utils.enums.TipoSaida;
 import br.com.tiagoaramos.estoque.view.CadastroBagAb;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
-
 import comp.CalendarComboBox;
+import net.sf.jasperreports.engine.JRResultSetDataSource;
 
 /**
  * 

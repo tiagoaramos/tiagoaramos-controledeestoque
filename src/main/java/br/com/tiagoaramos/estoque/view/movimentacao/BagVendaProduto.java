@@ -48,6 +48,9 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import javax.swing.table.DefaultTableModel;
 
+import br.com.mzsw.BalancaListener;
+import br.com.mzsw.PesoLib;
+import br.com.tiagoaramos.estoque.control.ControleEstoqueMain;
 import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
 import br.com.tiagoaramos.estoque.model.EntradaModel;
 import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
@@ -59,6 +62,8 @@ import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
 import br.com.tiagoaramos.estoque.model.dao.SaidaDAO;
 import br.com.tiagoaramos.estoque.model.dao.SaidaProdutoDAO;
 import br.com.tiagoaramos.estoque.utils.GridLayout;
+import br.com.tiagoaramos.estoque.utils.enums.TipoEntrada;
+import br.com.tiagoaramos.estoque.utils.enums.TipoProduto;
 import br.com.tiagoaramos.estoque.utils.enums.TipoSaida;
 import br.com.tiagoaramos.estoque.view.CadastroBagAb;
 import br.com.tiagoaramos.estoque.view.ControleEstoqueView;
@@ -69,7 +74,7 @@ import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
  * 
  * @author tiago
  */
-public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
+public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements BalancaListener {
 
 	/**
 	 * 
@@ -123,6 +128,8 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	private ProdutoModel produto;
 	private String codigoProduto;
 
+	private PesoLib balanca;
+
 	public BagVendaProduto() {
 		try {
 			initComponents();
@@ -170,7 +177,18 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 
 		// Grid
 		linha4();
+		
 
+		try{
+			balanca = ControleEstoqueMain.balanca;
+			if(balanca == null) {
+					balanca = new PesoLib();
+					ControleEstoqueMain.balanca = balanca;
+			}
+			balanca.addEventListener(this);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void linha0() {
@@ -205,9 +223,20 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 						jtfQuantidadeProduto.setEnabled(true);
 						jtfValorVenda.setEnabled(true);
 
+						if(produto.getTipoProduto() != null && produto.getTipoProduto().equals(TipoProduto.PESO)) {
+							try {
+								if(balanca != null) {
+									balanca.setPreco(produto.getPreco().floatValue());
+								}
+							}catch (Exception err) {
+								System.out.println(err.getMessage());
+							}
+						}
+						
 						jtfQuantidadeProduto.selectAll();
 						jtfQuantidadeProduto.requestFocus();
 						jtfQuantidadeProduto.selectAll();
+						
 
 					} else {
 						jtfQuantidadeProduto.setEnabled(false);
@@ -250,7 +279,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	private void linha2() {
 		// Quantidade de produtos
 		jtfQuantidadeProduto = new JFormattedTextField(NumberFormat
-				.getIntegerInstance());
+				.getNumberInstance());
 		jtfQuantidadeProduto.setName("jtfQuantidadeProduto");
 		jtfQuantidadeProduto.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
@@ -415,7 +444,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 				saidaProduto.getProduto().getNome(),
 				saidaProduto.getQuantidade().toString(),
 				saidaProduto.getPrecoVenda().multiply(
-						new BigDecimal(saidaProduto.getQuantidade())) });
+						 saidaProduto.getQuantidade()) });
 
 	}
 
@@ -464,13 +493,13 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 
 		BigDecimal vendaAtual = model.getPrecoVenda() == null ? new BigDecimal(
 				"0.00") : model.getPrecoVenda();
-		Integer quantidadeAtual = model.getQuantidade();
+		BigDecimal quantidadeAtual = model.getQuantidade();
 		if (quantidadeAtual != null && quantidadeAtual.intValue() > 1)
-			vendaAtual = vendaAtual.multiply(new BigDecimal(quantidadeAtual));
+			vendaAtual = vendaAtual.multiply(quantidadeAtual);
 
 		model.setSaida(saida);
 		model.setProduto(produto);
-		model.setQuantidade(new Integer(jtfQuantidadeProduto.getText()));
+		model.setQuantidade(new BigDecimal((Double)jtfQuantidadeProduto.getValue()));
 		model.setPrecoVenda(new BigDecimal(jtfValorVenda.getText().replaceAll(
 				",", ".")));
 
@@ -482,14 +511,14 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 				tableModel.setValueAt(model.getQuantidade().toString(), indice,
 						1);
 				tableModel.setValueAt(model.getPrecoVenda().multiply(
-						new BigDecimal(model.getQuantidade())).toString(),
+						model.getQuantidade()).toString(),
 						indice, 2);
 
 				BigDecimal vendaAntiga = model.getPrecoVenda();
 				if (model.getQuantidade() != null
 						&& model.getQuantidade().intValue() > 1)
-					vendaAntiga = vendaAntiga.multiply(new BigDecimal(model
-							.getQuantidade()));
+					vendaAntiga = vendaAntiga.multiply(model
+							.getQuantidade());
 
 				vendaAtual = vendaAntiga.add(vendaAtual.negate());
 
@@ -497,7 +526,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 				lista.add(model);
 				adicionarTabela(model);
 				vendaAtual = model.getPrecoVenda().multiply(
-						new BigDecimal(model.getQuantidade()));
+						model.getQuantidade());
 			}
 			jtfQuantidadeProduto.setEnabled(false);
 			jtfValorVenda.setEnabled(false);
@@ -678,13 +707,13 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 
 					for (SaidaProdutoModel saidaProdutoModel : saida.getProdutos()) {
 						ProdutoModel produto = saidaProdutoModel.getProduto();
-						produto.setEstoqueAtual(new Integer(produto.getEstoqueAtual()
-								.intValue()
-								- saidaProdutoModel.getQuantidade().intValue()));
+						produto.setEstoqueAtual(new BigDecimal(produto.getEstoqueAtual()
+								.doubleValue()
+								- saidaProdutoModel.getQuantidade().doubleValue()));
 
-						if (produto.getEstoqueAtual().intValue() < 0) {
+						if (produto.getEstoqueAtual().doubleValue() < 0) {
 							registraEntrada(produto);
-							produto.setEstoqueAtual(0);
+							produto.setEstoqueAtual(new BigDecimal(0));
 						}
 
 						produtoDAO.merge(produto);
@@ -714,15 +743,22 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 
 	private void registraEntrada(ProdutoModel produto)
 			throws PersistenciaException {
-		EntradaModel entrada = new EntradaModel();
 		produto = ProdutoDAO.getInstance().buscarPorCodigo(produto.getId());
+		
+		EntradaModel entrada = new EntradaModel();
 		entrada.setComprasProdutos(new ArrayList<EntradaProdutoModel>());
+		entrada.setTipoEntrada(TipoEntrada.SALDO0);
+		entrada.setData(new  Date());
+		
 		EntradaProdutoModel entradaProduto = new EntradaProdutoModel();
 		entradaProduto.setEntrada(entrada);
 		entradaProduto.setProduto(produto);
-		entradaProduto.setQuantidade(produto.getEstoqueAtual() * -1);
-		produto.setEstoqueAtual(0);
+		entradaProduto.setQuantidade(new BigDecimal(produto.getEstoqueAtual().doubleValue() * -1));
+		
+		produto.setEstoqueAtual(new BigDecimal(0));
+		
 		entrada.getComprasProdutos().add(entradaProduto);
+		
 		EntradaDAO.getInstance().persiste(entrada);
 	}
 
@@ -777,6 +813,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	private void alteraTotal(BigDecimal alt) {
 		BigDecimal valor = new BigDecimal(lbVlTotal.getText().replaceAll("[,]",
 				"."));
+		valor.setScale(2, BigDecimal.ROUND_CEILING);
 		valor = valor.add(alt);
 		lbVlTotal.setText(valor.toPlainString().replaceAll("[.]", ","));
 	}
@@ -853,6 +890,23 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> {
 			return true;
 		}
 		return false;
+	}
+
+	
+	@Override
+	public void onConectado(Object sender) {
+		
+	}
+
+	@Override
+	public void onPesoRecebido(Object sender, int gramas) {
+		jtfQuantidadeProduto.setText(NumberFormat.getNumberInstance().format(gramas / 1000));
+	}
+
+	@Override
+	public void onDesconectado(Object sender) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

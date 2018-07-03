@@ -175,7 +175,7 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 			cmbTipoEntrada.setSelectedItem(TipoEntrada.COMPRA);
 			gridPanelEsquerdo.add("Tipo de entrada:",cmbTipoEntrada);
 	    	
-			jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getIntegerInstance());
+			jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getNumberInstance());
 			jtfQuantidadeProduto.setName("jtfQuantidadeProduto");
 			jtfQuantidadeProduto.addKeyListener(new KeyListener() {
 				public void keyTyped(KeyEvent e) {
@@ -272,8 +272,8 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 		
 		model.setEntrada(entrada);
 		model.setProduto(produtoDAO.buscarPorIdentificador(jtfCodigoProduto.getText()));
-		model.setQuantidade(new Integer(jtfQuantidadeProduto.getText()));
-		model.setPrecoCompra(new BigDecimal((new BigDecimal(jtfValorCompra.getText().replaceAll(",", ".")).doubleValue() /( model.getQuantidade() > 0 ? model.getQuantidade() : 1))));
+		model.setQuantidade(new BigDecimal(jtfQuantidadeProduto.getText()));
+		model.setPrecoCompra(new BigDecimal((new BigDecimal(jtfValorCompra.getText().replaceAll(",", ".")).doubleValue() /( model.getQuantidade().doubleValue() > 0 ? model.getQuantidade().doubleValue() : 1))));
 
 		try {
 			if (model.getId() != null && model.getId().intValue() > 0) {
@@ -312,7 +312,7 @@ public class BagEntradaProduto extends CadastroBagAb<EntradaProdutoModel> {
 			for (EntradaProdutoModel compraProdutoModel : entrada.getComprasProdutos()) {
 				ProdutoModel produto = compraProdutoModel.getProduto(); 
 				produto.setPreco(compraProdutoModel.getPrecoCompra());
-				produto.setEstoqueAtual(new Integer(produto.getEstoqueAtual().intValue() + compraProdutoModel.getQuantidade().intValue()));
+				produto.setEstoqueAtual(new BigDecimal(produto.getEstoqueAtual().intValue() + compraProdutoModel.getQuantidade().intValue()));
 				produtoDAO.merge(produto);
 			}
 			

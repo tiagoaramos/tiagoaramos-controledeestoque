@@ -30,7 +30,7 @@ public class SaidaProdutoModel implements MovimetaProdutoIf  {
 	private BigDecimal precoVenda;
 	
 	@Column(name="sapquantidade")
-	private Integer quantidade;
+	private BigDecimal quantidade;
 
 	@ManyToOne
 	@JoinColumn(name="sapproid")
@@ -56,11 +56,11 @@ public class SaidaProdutoModel implements MovimetaProdutoIf  {
 		this.precoVenda = precoVenda;
 	}
 
-	public Integer getQuantidade() {
+	public BigDecimal getQuantidade() {
 		return quantidade;
 	}
 
-	public void setQuantidade(Integer quantidade) {
+	public void setQuantidade(BigDecimal quantidade) {
 		this.quantidade = quantidade;
 	}
 

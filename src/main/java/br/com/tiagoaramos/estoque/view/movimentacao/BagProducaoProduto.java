@@ -210,7 +210,7 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 			cmbTipoEntrada.setSelectedItem(TipoEntrada.COMPRA);
 			gridPanelEsquerdo.add("Tipo de produção:",cmbTipoEntrada);
 	    	
-			jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getIntegerInstance());
+			jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getNumberInstance());
 			jtfQuantidadeProduto.setName("jtfQuantidadeProduto");
 			jtfQuantidadeProduto.addKeyListener(new KeyListener() {
 				public void keyTyped(KeyEvent e) {
@@ -346,7 +346,7 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 		alteraUnit(custoUnitario);
 		
 		model.setProduto(produto);
-		model.setQuantidade(new Integer(jtfQuantidadeProduto.getText()));
+		model.setQuantidade(new BigDecimal(jtfQuantidadeProduto.getText()));
 
 		try {
 			if (model.getId() != null && model.getId().intValue() > 0) {
@@ -394,15 +394,15 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 				ProdutoModel produto = produtoDAO.buscarPorCodigo( compraProdutoModel.getProduto().getId());; 
 				
 				double custoMedio = produto.getPreco().doubleValue();
-				int qtdAtual = produto.getEstoqueAtual();
-				double custoTotal =qtdAtual * custoMedio;
+				BigDecimal qtdAtual = produto.getEstoqueAtual();
+				double custoTotal =qtdAtual.doubleValue() * custoMedio;
 				
-				int qtdProduzida = compraProdutoModel.getQuantidade();
-				double custoProducao = custoUnitario.doubleValue() * qtdProduzida;
+				BigDecimal qtdProduzida = compraProdutoModel.getQuantidade();
+				double custoProducao = custoUnitario.doubleValue() * qtdProduzida.doubleValue();
 				
 				custoTotal += custoProducao;
-				qtdAtual += qtdProduzida;
-				custoMedio = custoTotal / qtdAtual; 
+				qtdAtual.add(qtdProduzida);
+				custoMedio = custoTotal / qtdAtual.doubleValue(); 
 				
 				produto.setEstoqueAtual(qtdAtual);
 				produto.setPreco(new BigDecimal(custoMedio));
@@ -584,10 +584,10 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 			if(model instanceof SaidaProdutoModel){
 				// saida corrigi custo total
 				
-				custoTotal = custoTotal.subtract(new BigDecimal(model.getQuantidade() * model.getProduto().getPreco().doubleValue()));
+				custoTotal = custoTotal.subtract(new BigDecimal(model.getQuantidade().doubleValue() * model.getProduto().getPreco().doubleValue()));
 				saida.getProdutos().remove(model);
 			}else{
-				qtdTotalProduzida -= model.getQuantidade();
+				qtdTotalProduzida -= model.getQuantidade().doubleValue();
 				entrada.getComprasProdutos().remove(model);
 			}
 			custoUnitario = new BigDecimal(qtdTotalProduzida > 0 ? custoTotal.doubleValue() / (double)qtdTotalProduzida : 0);

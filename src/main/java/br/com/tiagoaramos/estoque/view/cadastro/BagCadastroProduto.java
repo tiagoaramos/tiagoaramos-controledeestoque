@@ -43,6 +43,7 @@ import br.com.tiagoaramos.estoque.model.ProdutoModel;
 import br.com.tiagoaramos.estoque.model.dao.CategoriaDAO;
 import br.com.tiagoaramos.estoque.model.dao.FornecedorDAO;
 import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
+import br.com.tiagoaramos.estoque.utils.enums.TipoProduto;
 import br.com.tiagoaramos.estoque.utils.mascaras.MaskDecimal;
 import br.com.tiagoaramos.estoque.utils.mascaras.MaskInteiros;
 import br.com.tiagoaramos.estoque.view.CadastroBagAb;
@@ -68,6 +69,7 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 	private JFormattedTextField jtfEstoqueProduto;
 	private JComboBox cmbCategoria;
 	private JComboBox cmbFornecedor;
+	private JComboBox cmbTipoProduto;
 	protected JButton jbtEtiqueta;
 
 	private int flagMerge = 0;
@@ -110,7 +112,7 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 		jtfPrecoVendaProduto.addKeyListener(MaskDecimal.getInstance());
 		grid.add("Preço Venda", jtfPrecoVendaProduto);
 
-		jtfEstoqueProduto = new JFormattedTextField(NumberFormat.getIntegerInstance());
+		jtfEstoqueProduto = new JFormattedTextField(NumberFormat.getNumberInstance());
 		jtfEstoqueProduto.addKeyListener(MaskInteiros.getInstance());
 		grid.add("Estoque:", jtfEstoqueProduto);
 
@@ -127,13 +129,19 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 			cmbFornecedor.addItem(fornecedor);
 		}
 		grid.add("Fornecedor:", cmbFornecedor);
+		
+		cmbTipoProduto = new JComboBox();
+		for (TipoProduto tipoProduto : TipoProduto.values()) {
+			cmbTipoProduto.addItem(tipoProduto);
+		}
+		grid.add("Tipo de Venda:", cmbTipoProduto);
 
 		grid.add("Ação:", jbtSalvar, jbtEditar, jbtExcluir, jbtEtiqueta);
 
 		/* fim do formulário */
 		jpnTabela.setBorder(new TitledBorder("Produtos"));
 		tableModel = new DefaultTableModel(new Object[][] {},
-				new String[] { "Código", "Nome", "Preço", "Preço venda", "Quantidade", "Categoria", "Fornecedor" }) {
+				new String[] { "Código", "Nome", "Preço", "Preço venda", "Quantidade", "Categoria", "Fornecedor","Tipo Venda" }) {
 			private static final long serialVersionUID = 5622980448697494420L;
 
 			public boolean isCellEditable(int row, int col) {
@@ -200,8 +208,10 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 		jtbTabela.getColumnModel().getColumn(4).setResizable(true);
 		jtbTabela.getColumnModel().getColumn(5).setPreferredWidth(200);
 		jtbTabela.getColumnModel().getColumn(5).setResizable(true);
-		jtbTabela.getColumnModel().getColumn(6).setPreferredWidth(200);
+		jtbTabela.getColumnModel().getColumn(6).setPreferredWidth(100);
 		jtbTabela.getColumnModel().getColumn(6).setResizable(true);
+		jtbTabela.getColumnModel().getColumn(7).setPreferredWidth(100);
+		jtbTabela.getColumnModel().getColumn(7).setResizable(true);
 		preencherTabela();
 
 		grid.add(jspContainer);
@@ -265,7 +275,7 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 	private void adicionarTabela(ProdutoModel produto) {
 		tableModel.addRow(new Object[] { produto.getId().toString(), produto.getNome(), produto.getPreco().toString(),
 				produto.getPrecoVenda().toString(), produto.getEstoqueAtual().toString(), produto.getCategoria(),
-				produto.getFornecedor() });
+				produto.getFornecedor(),produto.getTipoProduto() });
 	}
 
 	protected void editarModel() {
@@ -296,6 +306,13 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 					break;
 				}
 			}
+
+			for (int i = 0; i < cmbTipoProduto.getModel().getSize(); i++) {
+				if (cmbTipoProduto.getModel().getElementAt(i).equals(model.getTipoProduto())) {
+					cmbTipoProduto.setSelectedIndex(i);
+					break;
+				}
+			}
 		} else {
 			JOptionPane.showMessageDialog(this, "Selecione um registro para editar!", "Erro",
 					JOptionPane.ERROR_MESSAGE);
@@ -308,9 +325,10 @@ public class BagCadastroProduto extends CadastroBagAb<ProdutoModel> {
 		model.setIdentificador(jtfIdentificadorProduto.getText());
 		model.setPreco(new BigDecimal(jtfPrecoProduto.getText().replaceAll(",", ".")));
 		model.setPrecoVenda(new BigDecimal(jtfPrecoVendaProduto.getText().replaceAll(",", ".")));
-		model.setEstoqueAtual(new Integer(jtfEstoqueProduto.getText()));
+		model.setEstoqueAtual(new BigDecimal(jtfEstoqueProduto.getText()));
 		model.setCategoria((CategoriaProdutoModel) cmbCategoria.getSelectedItem());
 		model.setFornecedor((FornecedorModel) cmbFornecedor.getSelectedItem());
+		model.setTipoProduto((TipoProduto)cmbTipoProduto.getSelectedItem());
 		model.setSaldoInicial(model.getEstoqueAtual());
 
 		try {

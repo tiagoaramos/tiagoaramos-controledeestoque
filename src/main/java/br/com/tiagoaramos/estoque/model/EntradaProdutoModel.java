@@ -28,7 +28,7 @@ public class EntradaProdutoModel implements MovimetaProdutoIf  {
 	private Integer id;
 
 	@Column(name="enpquantidade")
-	private Integer quantidade;	
+	private BigDecimal quantidade;	
 
 	@Column(name="enppreco")
 	private BigDecimal precoCompra;	
@@ -44,7 +44,7 @@ public class EntradaProdutoModel implements MovimetaProdutoIf  {
 	public EntradaProdutoModel(){}
 			
 	
-	public EntradaProdutoModel(Integer id, Integer quantidade,
+	public EntradaProdutoModel(Integer id, BigDecimal quantidade,
 			ProdutoModel produto, EntradaModel entrada) {
 		super();
 		this.id = id;
@@ -61,11 +61,11 @@ public class EntradaProdutoModel implements MovimetaProdutoIf  {
 		this.id = id;
 	}
 
-	public Integer getQuantidade() {
+	public BigDecimal getQuantidade() {
 		return quantidade;
 	}
 
-	public void setQuantidade(Integer quantidade) {
+	public void setQuantidade(BigDecimal quantidade) {
 		this.quantidade = quantidade;
 	}
 

@@ -248,7 +248,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 
 	private void linha2() {
 		// Quantidade de produtos
-		jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getIntegerInstance());
+		jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getNumberInstance());
 		jtfQuantidadeProduto.setName("jtfQuantidadeProduto");
 		jtfQuantidadeProduto.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
@@ -408,7 +408,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	private void adicionarTabela(SaidaProdutoModel saidaProduto) {
 		tableModel.addRow(new Object[] { saidaProduto.getProduto().getIdentificador() ,saidaProduto.getProduto().getNome(),
 				saidaProduto.getQuantidade().toString(),
-				saidaProduto.getPrecoVenda().multiply(new BigDecimal(saidaProduto.getQuantidade())) });
+				saidaProduto.getPrecoVenda().multiply(saidaProduto.getQuantidade()) });
 
 	}
 
@@ -453,13 +453,13 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	protected void salvarModel() {
 
 		BigDecimal vendaAtual = model.getPrecoVenda() == null ? new BigDecimal("0.00") : model.getPrecoVenda();
-		Integer quantidadeAtual = model.getQuantidade(); 
+		BigDecimal quantidadeAtual = model.getQuantidade(); 
 		if(quantidadeAtual != null && quantidadeAtual.intValue() > 1)
-			vendaAtual = vendaAtual.multiply(new BigDecimal(quantidadeAtual));
+			vendaAtual = vendaAtual.multiply(quantidadeAtual);
 		
 		model.setSaida(saida);
 		model.setProduto(produto);
-		model.setQuantidade(new Integer(jtfQuantidadeProduto.getText()));
+		model.setQuantidade(new BigDecimal(jtfQuantidadeProduto.getText()));
 		model.setPrecoVenda(new BigDecimal(jtfValorVenda.getText().replaceAll(",", ".")));
 		
 		try {
@@ -468,18 +468,18 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 				// dao.merge(model);
 				tableModel.setValueAt(model.getProduto().getNome(), indice, 0);
 				tableModel.setValueAt(model.getQuantidade().toString(), indice,1);
-				tableModel.setValueAt(model.getPrecoVenda().multiply(new BigDecimal(model.getQuantidade())).toString(), indice,2);
+				tableModel.setValueAt(model.getPrecoVenda().multiply(model.getQuantidade()).toString(), indice,2);
 				
 				BigDecimal vendaAntiga = model.getPrecoVenda();
 				if(model.getQuantidade() != null && model.getQuantidade().intValue() > 1)
-					vendaAntiga = vendaAntiga.multiply(new BigDecimal(model.getQuantidade()));
+					vendaAntiga = vendaAntiga.multiply(model.getQuantidade());
 				
 				vendaAtual = vendaAntiga.add(vendaAtual.negate());
 				
 			} else {
 				lista.add(model);
 				adicionarTabela(model);
-				vendaAtual = model.getPrecoVenda().multiply(new BigDecimal(model.getQuantidade()));
+				vendaAtual = model.getPrecoVenda().multiply(model.getQuantidade());
 			}
 			jtfQuantidadeProduto.setEnabled(false);
 			jtfValorVenda.setEnabled(false);
@@ -519,11 +519,11 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 
 			for (SaidaProdutoModel saidaProdutoModel : saida.getProdutos()) {
 				ProdutoModel produto = saidaProdutoModel.getProduto();
-				produto.setEstoqueAtual(new Integer(produto.getEstoqueAtual().intValue()- saidaProdutoModel.getQuantidade().intValue()));
+				produto.setEstoqueAtual(new BigDecimal(produto.getEstoqueAtual().doubleValue()- saidaProdutoModel.getQuantidade().doubleValue()));
 
 				if (produto.getEstoqueAtual().intValue() < 0) {
 					registraEntrada(produto);
-					produto.setEstoqueAtual(0);
+					produto.setEstoqueAtual(new BigDecimal(0));
 				}
 
 				produtoDAO.merge(produto);
@@ -549,8 +549,8 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 		EntradaProdutoModel entradaProduto = new EntradaProdutoModel();
 		entradaProduto.setEntrada(entrada);
 		entradaProduto.setProduto(produto);
-		entradaProduto.setQuantidade(produto.getEstoqueAtual() * -1);
-		produto.setEstoqueAtual(0);
+		entradaProduto.setQuantidade(produto.getEstoqueAtual().multiply(new BigDecimal(-1)));
+		produto.setEstoqueAtual(new BigDecimal(0));
 		entrada.getComprasProdutos().add(entradaProduto);
 		EntradaDAO.getInstance().persiste(entrada);
 	}

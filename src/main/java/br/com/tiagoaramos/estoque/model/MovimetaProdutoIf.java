@@ -1,12 +1,13 @@
 package br.com.tiagoaramos.estoque.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 public interface MovimetaProdutoIf extends Model {
 	
-	public Integer getQuantidade() ;
+	public BigDecimal getQuantidade() ;
 
-	public void setQuantidade(Integer quantidade) ;
+	public void setQuantidade(BigDecimal quantidade) ;
 
 	public ProdutoModel getProduto() ;
 

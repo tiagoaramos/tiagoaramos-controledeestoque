@@ -12,6 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import br.com.tiagoaramos.estoque.utils.enums.TipoProduto;
+
 /**
  * @version 1.0
  * @created 17-set-2009 20:56:20
@@ -29,15 +31,17 @@ public class ProdutoModel implements Model  {
 	@Column(name="proidentificador", unique=true)
 	private String identificador;
 	@Column(name="proestoque")
-	private Integer estoqueAtual;
+	private BigDecimal estoqueAtual;
 	@Column(name="prosaldoinicial")
-	private Integer saldoInicial;
+	private BigDecimal saldoInicial;
 	@Column(name="pronome")
 	private String nome;
 	@Column(name="propreco")
 	private BigDecimal preco;
 	@Column(name="proprecovenda")
 	private BigDecimal precoVenda;
+	@Column(name="tipoProduto")
+	private TipoProduto tipoProduto;
 	
 	@ManyToOne
 	@JoinColumn(name="catid")
@@ -70,11 +74,11 @@ public class ProdutoModel implements Model  {
 		this.id = id;
 	}
 
-	public Integer getEstoqueAtual() {
+	public BigDecimal getEstoqueAtual() {
 		return estoqueAtual;
 	}
 
-	public void setEstoqueAtual(Integer estoqueAtual) {
+	public void setEstoqueAtual(BigDecimal estoqueAtual) {
 		this.estoqueAtual = estoqueAtual;
 	}
 
@@ -142,12 +146,20 @@ public class ProdutoModel implements Model  {
 		this.identificador = identificador;
 	}
 
-	public Integer getSaldoInicial() {
+	public BigDecimal getSaldoInicial() {
 		return saldoInicial;
 	}
 
-	public void setSaldoInicial(Integer saldoInicial) {
+	public void setSaldoInicial(BigDecimal saldoInicial) {
 		this.saldoInicial = saldoInicial;
+	}
+
+	public TipoProduto getTipoProduto() {
+		return tipoProduto;
+	}
+
+	public void setTipoProduto(TipoProduto tipoProduto) {
+		this.tipoProduto = tipoProduto;
 	}
 
 

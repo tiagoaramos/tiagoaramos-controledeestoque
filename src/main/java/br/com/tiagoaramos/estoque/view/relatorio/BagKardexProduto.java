@@ -21,6 +21,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -325,23 +326,26 @@ public class BagKardexProduto extends CadastroBagAb<MovimetaProdutoIf> {
 
 			@Override
 			public int compare(MovimetaProdutoIf o1, MovimetaProdutoIf o2) {
-				return o1.getData().compareTo(o2.getData());
+				if(o1 != null && o1.getData() != null && o2.getData() != null) {
+					return o1.getData().compareTo(o2.getData());
+				}
+				return -1;
 			}
 			
 		});
 		lista.clear();
 		lista = Arrays.asList(ordenado);
-		int saldo = produto.getSaldoInicial();
+		BigDecimal saldo = produto.getSaldoInicial();
 		for (MovimetaProdutoIf movimetaProdutoIf : ordenado) {
 			
 			if(movimetaProdutoIf instanceof EntradaProdutoModel){
-				saldo += movimetaProdutoIf.getQuantidade();
+				saldo.add(movimetaProdutoIf.getQuantidade());
 			}else{
-				saldo -= movimetaProdutoIf.getQuantidade();
+				saldo.subtract(movimetaProdutoIf.getQuantidade());
 			}
 			
 			tableModel.addRow(new Object[] {
-					SimpleDateFormat.getDateInstance().format(movimetaProdutoIf.getData()),
+					(movimetaProdutoIf.getData() != null ? SimpleDateFormat.getDateInstance().format(movimetaProdutoIf.getData()) : ""),
 					movimetaProdutoIf.getQuantidade(),
 					movimetaProdutoIf.getClass().getSimpleName().replace("ProdutoModel", ""),
 					saldo

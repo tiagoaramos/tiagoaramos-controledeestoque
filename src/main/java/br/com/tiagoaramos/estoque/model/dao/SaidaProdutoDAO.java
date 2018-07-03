@@ -10,8 +10,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
-import net.sf.jasperreports.engine.JRResultSetDataSource;
-
 import org.hibernate.impl.SessionImpl;
 
 import br.com.tiagoaramos.estoque.control.relatorio.GerarRelatorio;
@@ -19,6 +17,7 @@ import br.com.tiagoaramos.estoque.model.ProdutoModel;
 import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
 import br.com.tiagoaramos.estoque.utils.enums.TipoSaida;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
+import net.sf.jasperreports.engine.JRResultSetDataSource;
 
 public class SaidaProdutoDAO extends DAO<SaidaProdutoModel> {
 

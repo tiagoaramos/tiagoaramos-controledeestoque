@@ -4,22 +4,26 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.HashMap;
 
-import br.com.tiagoaramos.estoque.utils.LooadingBar;
-import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
-
 import com.mysql.management.MysqldResource;
 import com.mysql.management.MysqldResourceI;
+
+import br.com.mzsw.PesoLib;
+import br.com.tiagoaramos.estoque.utils.LooadingBar;
+import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
 
 public class ControleEstoqueMain {
 
 	public static final String DRIVER = "com.mysql.jdbc.Driver";
 	public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
 	public static MysqldResource mysqldResource;
+	public static PesoLib balanca;
 	
 	public static void main(String args[]) throws ClassNotFoundException,
 			SQLException {
 
 		LooadingBar.getInstance().begingLoading("Iniciando Recursos");
+		System.load(ControleEstoqueMain.class.getResource("/").getFile() + "PesoLib.dll");
+		balanca = new PesoLib(); 
 		
 		File ourAppDir = new File(System.getProperty(JAVA_IO_TMPDIR));
 		File databaseDir = new File(ourAppDir, "mysql-mxj");

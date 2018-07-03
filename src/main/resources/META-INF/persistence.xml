@@ -7,6 +7,7 @@
     <class>br.com.tiagoaramos.estoque.model.ProducaoModel</class>
     <class>br.com.tiagoaramos.estoque.model.EntradaProdutoModel</class>
     <class>br.com.tiagoaramos.estoque.model.FornecedorModel</class>
+    <class>br.com.tiagoaramos.estoque.model.EmpresaModel</class>
     <class>br.com.tiagoaramos.estoque.model.ProdutoModel</class>
     <class>br.com.tiagoaramos.estoque.model.SaidaModel</class>
     <class>br.com.tiagoaramos.estoque.model.SaidaProdutoModel</class>
@@ -14,7 +15,8 @@
     <class>br.com.tiagoaramos.estoque.model.UsuarioModel</class>
     <properties>
       
-      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <!--  property name="hibernate.hbm2ddl.auto" value="update"/-->
+      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
       <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
       <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
       <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3386/controle?createDatabaseIfNotExist=true"/>

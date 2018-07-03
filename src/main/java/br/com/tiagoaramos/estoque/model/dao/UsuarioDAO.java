@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import br.com.tiagoaramos.estoque.model.UsuarioModel;
-import br.com.tiagoaramos.estoque.model.dao.DAO;
 
 public class UsuarioDAO  extends DAO<UsuarioModel>{
 

@@ -4,7 +4,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import br.com.tiagoaramos.estoque.view.ControleEstoqueView;
-import br.com.tiagoaramos.estoque.view.cadastro.BagCadastroProduto;
 import br.com.tiagoaramos.estoque.view.cadastro.BagCadastroUsuario;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
 

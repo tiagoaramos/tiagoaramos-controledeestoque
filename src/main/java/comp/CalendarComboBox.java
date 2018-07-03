@@ -4,8 +4,6 @@
  */
 package comp;
 
-import com.sun.java.swing.plaf.motif.MotifComboBoxUI;
-import com.sun.java.swing.plaf.windows.WindowsComboBoxUI;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -20,6 +18,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -35,6 +34,9 @@ import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.plaf.metal.MetalComboBoxUI;
 import javax.swing.text.MaskFormatter;
+
+import com.sun.java.swing.plaf.motif.MotifComboBoxUI;
+import com.sun.java.swing.plaf.windows.WindowsComboBoxUI;
 
 public class CalendarComboBox extends JComboBox {
 
