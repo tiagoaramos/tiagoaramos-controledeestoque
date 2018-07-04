@@ -16,29 +16,29 @@ import javax.persistence.ManyToOne;
  * @created 17-set-2009 20:56:20
  */
 @Entity
-public class SaidaProdutoModel implements MovimetaProdutoIf  {
+public class VendaProdutoModel implements MovimetaProdutoIf  {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = -7236449969475240270L;
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	@Column(name="sapid")
+	@Column(name="id")
 	private Integer id;
 	
-	@Column(name="sappreco")
+	@Column(name="valor")
 	private BigDecimal precoVenda;
 	
-	@Column(name="sapquantidade")
+	@Column(name="quantidade")
 	private BigDecimal quantidade;
 
 	@ManyToOne
-	@JoinColumn(name="sapproid")
+	@JoinColumn(name="produto")
 	private ProdutoModel produto;
 	
 	@ManyToOne
-	@JoinColumn(name="sapsaiid")
-	private SaidaModel saida;
+	@JoinColumn(name="venda")
+	private VendaModel venda;
 
 	public Integer getId() {
 		return id;
@@ -72,17 +72,16 @@ public class SaidaProdutoModel implements MovimetaProdutoIf  {
 		this.produto = produto;
 	}
 
-	public SaidaModel getSaida() {
-		return saida;
-	}
-
-	public void setSaida(SaidaModel saida) {
-		this.saida = saida;
-	}
-
-	@Override
 	public Date getData() {
-		return getSaida().getData();
+		return getVenda().getData();
+	}
+
+	public VendaModel getVenda() {
+		return venda;
+	}
+
+	public void setVenda(VendaModel venda) {
+		this.venda = venda;
 	}
 	
 }

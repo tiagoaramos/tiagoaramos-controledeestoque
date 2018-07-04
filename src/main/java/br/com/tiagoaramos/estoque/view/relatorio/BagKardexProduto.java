@@ -46,8 +46,8 @@ import br.com.tiagoaramos.estoque.model.EntradaModel;
 import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
 import br.com.tiagoaramos.estoque.model.MovimetaProdutoIf;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
-import br.com.tiagoaramos.estoque.model.SaidaModel;
-import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
+import br.com.tiagoaramos.estoque.model.VendaModel;
+import br.com.tiagoaramos.estoque.model.VendaProdutoModel;
 import br.com.tiagoaramos.estoque.model.dao.EntradaProdutoDAO;
 import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
 import br.com.tiagoaramos.estoque.model.dao.SaidaProdutoDAO;
@@ -88,7 +88,7 @@ public class BagKardexProduto extends CadastroBagAb<MovimetaProdutoIf> {
 
 	private ProdutoDAO produtoDAO;
 
-	private SaidaModel saida;
+	private VendaModel saida;
 	private SaidaProdutoDAO saidaDAO;
 
 	private EntradaModel entrada;
@@ -318,7 +318,7 @@ public class BagKardexProduto extends CadastroBagAb<MovimetaProdutoIf> {
 			saidaDAO = SaidaProdutoDAO.getInstance();
 		
 		ArrayList<EntradaProdutoModel> entradas = entradaDAO.buscarPorProduto(produto);
-		ArrayList<SaidaProdutoModel> saidas = saidaDAO.buscarPorProduto(produto);
+		ArrayList<VendaProdutoModel> saidas = saidaDAO.buscarPorProduto(produto);
 		lista.addAll(entradas);
 		lista.addAll(saidas);
 		MovimetaProdutoIf[] ordenado = lista.toArray(new MovimetaProdutoIf[0]);

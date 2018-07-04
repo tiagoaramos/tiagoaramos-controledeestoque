@@ -4,6 +4,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.text.NumberFormat;
+
 import javax.print.Doc;
 import javax.print.DocFlavor;
 import javax.print.DocPrintJob;
@@ -17,7 +22,12 @@ import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
 
-import br.com.tiagoaramos.estoque.model.SaidaModel;
+import org.apache.commons.lang.StringUtils;
+
+import br.com.tiagoaramos.estoque.model.EmpresaModel;
+import br.com.tiagoaramos.estoque.model.VendaModel;
+import br.com.tiagoaramos.estoque.model.VendaProdutoModel;
+import br.com.tiagoaramos.estoque.model.dao.EmpresaDAO;
 
 /**
  *
@@ -30,10 +40,11 @@ public class Impressao {
 	 *            the command line arguments
 	 * @throws javax.print.PrintException
 	 */
-	public static void imprimir(SaidaModel saida) throws PrintException {
+	public static void imprimir(VendaModel saida) throws PrintException {
 		try {
 			// Localiza todas as impressoras com suporte a arquivos txt
-			PrintService[] servicosImpressao = PrintServiceLookup.lookupPrintServices(DocFlavor.INPUT_STREAM.AUTOSENSE, null);
+			PrintService[] servicosImpressao = PrintServiceLookup.lookupPrintServices(DocFlavor.INPUT_STREAM.AUTOSENSE,
+					null);
 
 			System.out.println("Impressoras com suporte: " + servicosImpressao.length);
 
@@ -55,9 +66,33 @@ public class Impressao {
 
 			PrintStream p = new PrintStream(fil);
 
-			
-			
-			p.print("CODIGO **** PRODUTO ********* VALOR" + (char) 27 + 'w');
+			EmpresaModel empresa = EmpresaDAO.getInstance().buscarPorCodigo(ControleSessaoUtil.empresaLogado.getId());
+
+			p.print(center80Cols (empresa.getNome()) + (char) 27);
+			p.print(center80Cols (empresa.getCnpj()) + (char) 27);
+			p.print(center80Cols (empresa.getEndereco()) + (char) 27);
+			p.print(center80Cols (empresa.getTelefone()) + (char) 27);
+
+			p.print(StringUtils.rightPad("", 80,"=") + (char) 27);
+
+			int i = 1;
+			BigDecimal total = new BigDecimal(0.0d);
+			for (VendaProdutoModel item : saida.getProdutos()) {
+				String linha = (item.getQuantidade().toPlainString()) + " x " + item.getProduto().getNome()+ "   ";
+				String valorLinha = ": R$ "+NumberFormat.getCurrencyInstance().format(item.getPrecoVenda().doubleValue());
+				linha = StringUtils.rightPad(linha, 80 - valorLinha.length(),"_") + valorLinha;
+				p.print( linha + (char) 27);
+				total.add(item.getPrecoVenda());
+			}
+			p.print("" + (char) 27);
+			p.print(StringUtils.rightPad("", 80,"=") + (char) 27);
+			p.print("" + (char) 27);
+			total.setScale(2, RoundingMode.CEILING);
+			p.print(StringUtils.leftPad("TOTAL  R$ " + total.toPlainString(),80," ") + (char) 27);
+			p.print("" + (char) 27);
+			p.print("" + (char) 27);
+			p.print("" + empresa.getMensagem() + (char) 27);
+			p.print("" + (char) 27 + 'w');
 
 			FileInputStream fi = new FileInputStream("c.txt");
 
@@ -72,7 +107,8 @@ public class Impressao {
 
 			if (mostrarDialogo) {
 				// exibe um dialogo de configuracoes de impressao
-				PrintService servico = ServiceUI.printDialog(null, 320, 240, servicosImpressao, impressora, docFlavor, printerAttributes);
+				PrintService servico = ServiceUI.printDialog(null, 320, 240, servicosImpressao, impressora, docFlavor,
+						printerAttributes);
 
 				if (servico != null) {
 					DocPrintJob printJob = servico.createPrintJob();
@@ -95,4 +131,19 @@ public class Impressao {
 			ex2.getMessage();
 		}
 	}
+	
+	
+	public static String center80Cols(String conteudo) {
+		String retorno ="";
+		if(conteudo != null) {
+			int preencher = (80 - conteudo.length()) / 2;
+			retorno = StringUtils.leftPad("", preencher," ");
+			retorno += conteudo;
+			retorno = StringUtils.rightPad(retorno, 80," ");
+		}else {
+			retorno = StringUtils.rightPad(retorno, 80," ");
+		}
+		return retorno;
+	}
+	
 }

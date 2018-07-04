@@ -53,8 +53,8 @@ import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
 import br.com.tiagoaramos.estoque.model.MovimetaProdutoIf;
 import br.com.tiagoaramos.estoque.model.ProducaoModel;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
-import br.com.tiagoaramos.estoque.model.SaidaModel;
-import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
+import br.com.tiagoaramos.estoque.model.VendaModel;
+import br.com.tiagoaramos.estoque.model.VendaProdutoModel;
 import br.com.tiagoaramos.estoque.model.dao.EntradaDAO;
 import br.com.tiagoaramos.estoque.model.dao.ProducaoProdutoDAO;
 import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
@@ -110,7 +110,7 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 	private JButton jbtPesquisar;
 	private JButton jbtFinalizar;
 	private EntradaModel entrada;
-	private SaidaModel saida;
+	private VendaModel saida;
 	private ProdutoDAO produtoDAO;
 	
 	private EntradaDAO compraDAO;
@@ -151,9 +151,9 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 			entrada.setComprasProdutos(new ArrayList<EntradaProdutoModel>());
 			entrada.setTipoEntrada(TipoEntrada.PRODUCAO);
 			
-			saida = new SaidaModel();
+			saida = new VendaModel();
 			saida.setData(new Date());
-			saida.setProdutos(new ArrayList<SaidaProdutoModel>());
+			saida.setProdutos(new ArrayList<VendaProdutoModel>());
 			
 			jbtFinalizar = new JButton();
 			cmbTipoEntrada = new JComboBox();
@@ -325,9 +325,9 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 		produto = produtoDAO.buscarPorIdentificador(jtfCodigoProduto.getText());
 		
 		if(tipo.equals(TipoProducao.MATERIA_PRIMA)){
-			model = new SaidaProdutoModel();
-			((SaidaProdutoModel)model).setSaida(saida);
-			saida.getProdutos().add((SaidaProdutoModel) model);
+			model = new VendaProdutoModel();
+			((VendaProdutoModel)model).setVenda(saida);
+			saida.getProdutos().add((VendaProdutoModel) model);
 			
 			custoTotal = custoTotal.add(new BigDecimal(produto.getPreco().doubleValue() * new Integer(jtfQuantidadeProduto.getText())));
 			
@@ -415,7 +415,7 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 				
 			}
 			saida.setTipo(TipoSaida.USO_CONSUMO);
-			for (SaidaProdutoModel saidaProduto : saida.getProdutos()) {
+			for (VendaProdutoModel saidaProduto : saida.getProdutos()) {
 				saidaProduto.setPrecoVenda(new BigDecimal(0));
 			}
 
@@ -581,7 +581,7 @@ public class BagProducaoProduto extends CadastroBagAb<MovimetaProdutoIf> {
 		if(l.length > 0){
 					
 			model = lista.get(l[0]);
-			if(model instanceof SaidaProdutoModel){
+			if(model instanceof VendaProdutoModel){
 				// saida corrigi custo total
 				
 				custoTotal = custoTotal.subtract(new BigDecimal(model.getQuantidade().doubleValue() * model.getProduto().getPreco().doubleValue()));

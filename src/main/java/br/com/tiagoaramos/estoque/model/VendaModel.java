@@ -22,31 +22,39 @@ import br.com.tiagoaramos.estoque.utils.enums.TipoSaida;
  * @created 17-set-2009 20:56:19
  */
 @Entity
-public class SaidaModel implements Model  {
+public class VendaModel implements Model  {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6115258308695705410L;
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	@Column(name="saiid")
+	@Column(name="id")
 	private Integer id;
 	
-	@Column(name="saidata")
+	@Column(name="data")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date data;
 	
-	@Column(name="saitipo")
+	@Column(name="tipo")
 	private TipoSaida tipo;
 	
-	@OneToMany(mappedBy="saida",cascade=CascadeType.ALL)
-	private List<SaidaProdutoModel> produtos;
+	@OneToMany(mappedBy="venda",cascade=CascadeType.ALL)
+	private List<VendaProdutoModel> produtos;
 	
 	@ManyToOne
-	@JoinColumn(name="saiusuid", nullable=false)
+	@JoinColumn(name="usuario", nullable=false)
 	private UsuarioModel usuario;
+
+	@ManyToOne
+	@JoinColumn(name="cliente", nullable=true)
+	private ClienteModel cliente;
+
+	@OneToMany(mappedBy="venda",cascade=CascadeType.ALL)
+	private List<RecebimentoModel> recebimentos;
 	
-	public SaidaModel(Integer id, Date data, List<SaidaProdutoModel> produtos) {
+	
+	public VendaModel(Integer id, Date data, List<VendaProdutoModel> produtos) {
 		super();
 		this.id = id;
 		this.data = data;
@@ -54,7 +62,7 @@ public class SaidaModel implements Model  {
 	}
 
 
-	public SaidaModel() {
+	public VendaModel() {
 	}
 
 
@@ -78,12 +86,12 @@ public class SaidaModel implements Model  {
 	}
 
 
-	public List<SaidaProdutoModel> getProdutos() {
+	public List<VendaProdutoModel> getProdutos() {
 		return produtos;
 	}
 
 
-	public void setProdutos(List<SaidaProdutoModel> produtos) {
+	public void setProdutos(List<VendaProdutoModel> produtos) {
 		this.produtos = produtos;
 	}
 
@@ -105,6 +113,26 @@ public class SaidaModel implements Model  {
 
 	public void setUsuario(UsuarioModel usuario) {
 		this.usuario = usuario;
+	}
+
+
+	public ClienteModel getCliente() {
+		return cliente;
+	}
+
+
+	public void setCliente(ClienteModel cliente) {
+		this.cliente = cliente;
+	}
+
+
+	public List<RecebimentoModel> getRecebimentos() {
+		return recebimentos;
+	}
+
+
+	public void setRecebimentos(List<RecebimentoModel> recebimentos) {
+		this.recebimentos = recebimentos;
 	}
 
 	

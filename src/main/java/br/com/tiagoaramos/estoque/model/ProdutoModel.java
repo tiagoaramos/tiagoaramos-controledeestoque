@@ -56,7 +56,7 @@ public class ProdutoModel implements Model  {
 	
 	@OneToMany
 	@JoinColumn(referencedColumnName="proid")
-	private List<SaidaProdutoModel> vendas;
+	private List<VendaProdutoModel> vendas;
 	
 	public ProdutoModel(){
 
@@ -114,11 +114,11 @@ public class ProdutoModel implements Model  {
 		this.fornecedor = fornecedor;
 	}
 
-	public List<SaidaProdutoModel> getVendas() {
+	public List<VendaProdutoModel> getVendas() {
 		return vendas;
 	}
 
-	public void setVendas(List<SaidaProdutoModel> vendas) {
+	public void setVendas(List<VendaProdutoModel> vendas) {
 		this.vendas = vendas;
 	}
 

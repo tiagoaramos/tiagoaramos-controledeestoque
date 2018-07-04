@@ -5,11 +5,11 @@ import java.util.HashMap;
 
 import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
-import br.com.tiagoaramos.estoque.model.SaidaModel;
+import br.com.tiagoaramos.estoque.model.VendaModel;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
 
 
-public class SaidaDAO  extends DAO<SaidaModel>{
+public class SaidaDAO  extends DAO<VendaModel>{
 
 	/**
 	 * 
@@ -19,7 +19,7 @@ public class SaidaDAO  extends DAO<SaidaModel>{
 	
 	
 	private SaidaDAO() {
-		super(new SaidaModel());
+		super(new VendaModel());
 	}
 	public static SaidaDAO getInstance(){
 		if(instacia == null){
@@ -29,15 +29,15 @@ public class SaidaDAO  extends DAO<SaidaModel>{
 	}
 	
 	@Override
-	public void persiste(SaidaModel saida) throws PersistenciaException {
+	public void persiste(VendaModel saida) throws PersistenciaException {
 		saida.setUsuario(ControleSessaoUtil.usuarioLogado);
 		super.persiste(saida);
 	}
 	
-	public ArrayList<SaidaModel> buscarPorProduto(ProdutoModel produto){
+	public ArrayList<VendaModel> buscarPorProduto(ProdutoModel produto){
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("produto", produto);
-		return (ArrayList<SaidaModel>) executaQueryList(map, "SELECT c FROM SaidaModel c  where c.produto = :produto");
+		return (ArrayList<VendaModel>) executaQueryList(map, "SELECT c FROM SaidaModel c  where c.produto = :produto");
 	}
 	
 }

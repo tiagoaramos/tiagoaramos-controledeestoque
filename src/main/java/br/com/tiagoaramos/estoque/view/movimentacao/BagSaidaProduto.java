@@ -51,8 +51,8 @@ import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
 import br.com.tiagoaramos.estoque.model.EntradaModel;
 import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
-import br.com.tiagoaramos.estoque.model.SaidaModel;
-import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
+import br.com.tiagoaramos.estoque.model.VendaModel;
+import br.com.tiagoaramos.estoque.model.VendaProdutoModel;
 import br.com.tiagoaramos.estoque.model.dao.EntradaDAO;
 import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
 import br.com.tiagoaramos.estoque.model.dao.SaidaDAO;
@@ -68,7 +68,7 @@ import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
  * 
  * @author tiago
  */
-public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
+public class BagSaidaProduto extends CadastroBagAb<VendaProdutoModel> {
 
 	/**
 	 * 
@@ -107,7 +107,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	
 	private ProdutoDAO produtoDAO;
 
-	private SaidaModel saida;
+	private VendaModel saida;
 	private SaidaDAO saidaDAO;
 
 	private ProdutoModel produto;
@@ -123,14 +123,14 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	}
 
 	protected void initComponents() throws ParseException {
-		super.initComponents(new SaidaProdutoModel(), SaidaProdutoDAO.getInstance());
+		super.initComponents(new VendaProdutoModel(), SaidaProdutoDAO.getInstance());
 
 		setName("Saída de Produto");
 
 		if (saida == null) {
-			saida = new SaidaModel();
+			saida = new VendaModel();
 			saida.setData(new Date());
-			lista = new ArrayList<SaidaProdutoModel>();
+			lista = new ArrayList<VendaProdutoModel>();
 		}
 		
 		panelEsquerda = new JPanel();
@@ -405,7 +405,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 		grid.add(jspContainer);
 	}
 
-	private void adicionarTabela(SaidaProdutoModel saidaProduto) {
+	private void adicionarTabela(VendaProdutoModel saidaProduto) {
 		tableModel.addRow(new Object[] { saidaProduto.getProduto().getIdentificador() ,saidaProduto.getProduto().getNome(),
 				saidaProduto.getQuantidade().toString(),
 				saidaProduto.getPrecoVenda().multiply(saidaProduto.getQuantidade()) });
@@ -457,7 +457,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 		if(quantidadeAtual != null && quantidadeAtual.intValue() > 1)
 			vendaAtual = vendaAtual.multiply(quantidadeAtual);
 		
-		model.setSaida(saida);
+		model.setVenda(saida);
 		model.setProduto(produto);
 		model.setQuantidade(new BigDecimal(jtfQuantidadeProduto.getText()));
 		model.setPrecoVenda(new BigDecimal(jtfValorVenda.getText().replaceAll(",", ".")));
@@ -517,7 +517,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 			if (produtoDAO == null)
 				produtoDAO = ProdutoDAO.getInstance();
 
-			for (SaidaProdutoModel saidaProdutoModel : saida.getProdutos()) {
+			for (VendaProdutoModel saidaProdutoModel : saida.getProdutos()) {
 				ProdutoModel produto = saidaProdutoModel.getProduto();
 				produto.setEstoqueAtual(new BigDecimal(produto.getEstoqueAtual().doubleValue()- saidaProdutoModel.getQuantidade().doubleValue()));
 
@@ -558,7 +558,7 @@ public class BagSaidaProduto extends CadastroBagAb<SaidaProdutoModel> {
 	private void limparCampos() {
 		indice = -1;
 		codigoProduto = null;
-		model = new SaidaProdutoModel();
+		model = new VendaProdutoModel();
 		produto = new ProdutoModel();
 		jtfCodigoProduto.setText("");
 		jtfQuantidadeProduto.setText("1");

@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.print.PrintException;
 import javax.swing.JButton;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
@@ -55,8 +56,8 @@ import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
 import br.com.tiagoaramos.estoque.model.EntradaModel;
 import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
-import br.com.tiagoaramos.estoque.model.SaidaModel;
-import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
+import br.com.tiagoaramos.estoque.model.VendaModel;
+import br.com.tiagoaramos.estoque.model.VendaProdutoModel;
 import br.com.tiagoaramos.estoque.model.dao.EntradaDAO;
 import br.com.tiagoaramos.estoque.model.dao.ProdutoDAO;
 import br.com.tiagoaramos.estoque.model.dao.SaidaDAO;
@@ -69,12 +70,13 @@ import br.com.tiagoaramos.estoque.view.CadastroBagAb;
 import br.com.tiagoaramos.estoque.view.ControleEstoqueView;
 import br.com.tiagoaramos.estoque.view.utils.BagPesquisarProduto;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
+import br.com.tiagoaramos.estoque.view.utils.Impressao;
 
 /**
  * 
  * @author tiago
  */
-public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements BalancaListener {
+public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements BalancaListener {
 
 	/**
 	 * 
@@ -111,8 +113,10 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 	private JLabel lblTotalFinalizar;
 	private JButton jbtFinalizarDinheiro;
 	private JButton jbtFinalizarCartao;
+	private JButton jbtFinalizarCrediario;
 	private JButton jbtContinuar;
 	private JFormattedTextField jtfDesconto;
+	private JFrame frameParcelamento;
 
 	// frame aguarde
 	private JFrame frameAguarde;
@@ -122,7 +126,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 
 	private ProdutoDAO produtoDAO;
 
-	private SaidaModel saida;
+	private VendaModel saida;
 	private SaidaDAO saidaDAO;
 
 	private ProdutoModel produto;
@@ -139,14 +143,14 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 	}
 
 	protected void initComponents() throws ParseException {
-		super.initComponents(new SaidaProdutoModel(), SaidaProdutoDAO.getInstance());
+		super.initComponents(new VendaProdutoModel(), SaidaProdutoDAO.getInstance());
 
 		setName("Venda de Produtos");
 
 		if (saida == null) {
-			saida = new SaidaModel();
+			saida = new VendaModel();
 			saida.setData(new Date());
-			lista = new ArrayList<SaidaProdutoModel>();
+			lista = new ArrayList<VendaProdutoModel>();
 		}
 
 		panelEsquerda = new JPanel();
@@ -438,7 +442,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 		grid.add(jspContainer);
 	}
 
-	private void adicionarTabela(SaidaProdutoModel saidaProduto) {
+	private void adicionarTabela(VendaProdutoModel saidaProduto) {
 		tableModel.addRow(new Object[] {
 				saidaProduto.getProduto().getIdentificador(),
 				saidaProduto.getProduto().getNome(),
@@ -497,9 +501,10 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 		if (quantidadeAtual != null && quantidadeAtual.intValue() > 1)
 			vendaAtual = vendaAtual.multiply(quantidadeAtual);
 
-		model.setSaida(saida);
+		model.setVenda(saida);
 		model.setProduto(produto);
-		model.setQuantidade(new BigDecimal((Double)jtfQuantidadeProduto.getValue()));
+		model.setQuantidade(new BigDecimal(jtfQuantidadeProduto.getText().replaceAll(
+				",", ".")));
 		model.setPrecoVenda(new BigDecimal(jtfValorVenda.getText().replaceAll(
 				",", ".")));
 
@@ -588,7 +593,17 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 					finalizarSaida();
 				}
 			});
-			jbtContinuar = new JButton("F3 - continuar");
+			jbtFinalizarCrediario = new JButton("F3 - Crediario");
+			jbtFinalizarCrediario.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					frameModal.setVisible(false);
+					saida.setTipo(TipoSaida.CARTAO);
+					janelaAguarde(true);
+					finalizarSaida();
+				}
+			});
+			jbtContinuar = new JButton("F4 - continuar");
 			jtfDesconto = new JFormattedTextField(new DecimalFormat("#.00"));
 
 			jtfDesconto.addKeyListener(new KeyListener() {
@@ -622,21 +637,50 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 						janelaAguarde(true);
 						finalizarSaida();
 						frameModal.setVisible(false);
+					}else if (e.getKeyCode() == KeyEvent.VK_F3) {
+						saida.setTipo(TipoSaida.CREDIARIO);
+						janelaAguarde(true);
+						finalizarSaida();
+						frameModal.setVisible(false);
+					}else if (e.getKeyCode() == KeyEvent.VK_F4) {
+						frameModal.setVisible(false);
+						jtfCodigoProduto.requestFocus();
 					}
 				}
 			});
 			lblTotalFinalizar = new JLabel();
 
-			grid.add(jbtFinalizarCartao, jbtFinalizarDinheiro, jbtContinuar);
+			grid.add(jbtFinalizarCartao, jbtFinalizarDinheiro,jbtFinalizarCrediario);
+			grid.add(jbtContinuar);
 
 			grid.add("Total: ", lblTotalFinalizar);
 			grid.add("Desconto: ", jtfDesconto);
+			
+			
+
+			
+			
 		}
 		jtfDesconto.setValue(new BigDecimal(lbVlTotal.getText().replaceAll(",",
 				".")));
 		lblTotalFinalizar.setText(lbVlTotal.getText());
 
 	}
+	
+	
+	protected void janelaParcelamento(TipoSaida tipoSaida, BigDecimal total) {
+		frameParcelamento = new JFrame();
+
+		frameParcelamento.setSize(350, 200);
+		frameParcelamento.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+
+		JPanel parcelamentoModalJpanel = new JPanel();
+
+		frameParcelamento.getContentPane().add(parcelamentoModalJpanel);
+
+		GridLayout grid = new GridLayout(parcelamentoModalJpanel);
+	}
+	
 
 	protected void janelaAguarde(boolean visibilidade) {
 		if (frameAguarde == null) {
@@ -688,13 +732,13 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 						BigDecimal razao = valor.subtract(valorDesconto);
 						razao = razao.divide(valor,2,BigDecimal.ROUND_CEILING);
 						valor = new BigDecimal("0.00");
-						for (SaidaProdutoModel saidaProduto : saida.getProdutos()) {
+						for (VendaProdutoModel saidaProduto : saida.getProdutos()) {
 							saidaProduto.setPrecoVenda(saidaProduto.getPrecoVenda().subtract(saidaProduto.getPrecoVenda().multiply(razao)));
 							valor = valor.add(saidaProduto.getPrecoVenda());
 						}
 						if(!valor.toPlainString().equals(valorDesconto.toPlainString())){
 							razao = valorDesconto.subtract(valor);
-							SaidaProdutoModel saidaProduto = saida.getProdutos().get(0);
+							VendaProdutoModel saidaProduto = saida.getProdutos().get(0);
 							saidaProduto.setPrecoVenda(saidaProduto.getPrecoVenda().add(razao));
 						}
 					}
@@ -702,10 +746,12 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 					
 					saidaDAO.persiste(saida);
 
+					Impressao.imprimir(saida);
+						
 					if (produtoDAO == null)
 						produtoDAO = ProdutoDAO.getInstance();
 
-					for (SaidaProdutoModel saidaProdutoModel : saida.getProdutos()) {
+					for (VendaProdutoModel saidaProdutoModel : saida.getProdutos()) {
 						ProdutoModel produto = saidaProdutoModel.getProduto();
 						produto.setEstoqueAtual(new BigDecimal(produto.getEstoqueAtual()
 								.doubleValue()
@@ -732,6 +778,9 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 					}
 				} catch (PersistenciaException e) {
 					e.printStackTrace();
+				} catch (PrintException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 		
 			}
@@ -765,7 +814,7 @@ public class BagVendaProduto extends CadastroBagAb<SaidaProdutoModel> implements
 	private void limparCampos() {
 		indice = -1;
 		codigoProduto = null;
-		model = new SaidaProdutoModel();
+		model = new VendaProdutoModel();
 		produto = new ProdutoModel();
 		jtfCodigoProduto.setText("");
 		jtfQuantidadeProduto.setText("1");

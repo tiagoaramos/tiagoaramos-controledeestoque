@@ -33,7 +33,7 @@ public class UsuarioModel implements Model  {
 	
 
 	@OneToMany(mappedBy="usuario",cascade=CascadeType.ALL,fetch=FetchType.LAZY)
-	private List<SaidaModel> saidas;
+	private List<VendaModel> saidas;
 	
 	@OneToMany(mappedBy="usuario",cascade=CascadeType.ALL,fetch=FetchType.LAZY)
 	private List<RetiradaModel> retiradas;
@@ -97,11 +97,11 @@ public class UsuarioModel implements Model  {
 		this.tipoUsuario = tipoUsuario;
 	}
 
-	public List<SaidaModel> getSaidas() {
+	public List<VendaModel> getSaidas() {
 		return saidas;
 	}
 
-	public void setSaidas(List<SaidaModel> saidas) {
+	public void setSaidas(List<VendaModel> saidas) {
 		this.saidas = saidas;
 	}
 

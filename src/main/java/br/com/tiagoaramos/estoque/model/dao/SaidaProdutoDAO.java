@@ -14,12 +14,12 @@ import org.hibernate.impl.SessionImpl;
 
 import br.com.tiagoaramos.estoque.control.relatorio.GerarRelatorio;
 import br.com.tiagoaramos.estoque.model.ProdutoModel;
-import br.com.tiagoaramos.estoque.model.SaidaProdutoModel;
+import br.com.tiagoaramos.estoque.model.VendaProdutoModel;
 import br.com.tiagoaramos.estoque.utils.enums.TipoSaida;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
 import net.sf.jasperreports.engine.JRResultSetDataSource;
 
-public class SaidaProdutoDAO extends DAO<SaidaProdutoModel> {
+public class SaidaProdutoDAO extends DAO<VendaProdutoModel> {
 
 	/**
 	 * 
@@ -29,7 +29,7 @@ public class SaidaProdutoDAO extends DAO<SaidaProdutoModel> {
 	
 	
 	private SaidaProdutoDAO() {
-		super(new SaidaProdutoModel());
+		super(new VendaProdutoModel());
 	}
 
 	public static SaidaProdutoDAO getInstance(){
@@ -178,10 +178,10 @@ public class SaidaProdutoDAO extends DAO<SaidaProdutoModel> {
 		
 	}
 
-	public ArrayList<SaidaProdutoModel> buscarPorProduto(ProdutoModel produto){
+	public ArrayList<VendaProdutoModel> buscarPorProduto(ProdutoModel produto){
 		HashMap<String, Object> map = new HashMap<String, Object>();
 		map.put("produto", produto);
-		return (ArrayList<SaidaProdutoModel>) executaQueryList(map, "SELECT c FROM SaidaProdutoModel c  where c.produto = :produto");
+		return (ArrayList<VendaProdutoModel>) executaQueryList(map, "SELECT c FROM SaidaProdutoModel c  where c.produto = :produto");
 	}
 
 }

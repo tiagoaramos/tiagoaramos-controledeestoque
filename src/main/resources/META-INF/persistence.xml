@@ -9,14 +9,16 @@
     <class>br.com.tiagoaramos.estoque.model.FornecedorModel</class>
     <class>br.com.tiagoaramos.estoque.model.EmpresaModel</class>
     <class>br.com.tiagoaramos.estoque.model.ProdutoModel</class>
-    <class>br.com.tiagoaramos.estoque.model.SaidaModel</class>
-    <class>br.com.tiagoaramos.estoque.model.SaidaProdutoModel</class>
+    <class>br.com.tiagoaramos.estoque.model.VendaModel</class>
+    <class>br.com.tiagoaramos.estoque.model.VendaProdutoModel</class>
     <class>br.com.tiagoaramos.estoque.model.ParametroModel</class>
     <class>br.com.tiagoaramos.estoque.model.UsuarioModel</class>
+    <class>br.com.tiagoaramos.estoque.model.RecebimentoModel</class>
+    <class>br.com.tiagoaramos.estoque.model.ClienteModel</class>
     <properties>
       
-      <!--  property name="hibernate.hbm2ddl.auto" value="update"/-->
-      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <!-- property name="hibernate.hbm2ddl.auto" value="create-drop"/-->
       <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
       <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
       <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3386/controle?createDatabaseIfNotExist=true"/>

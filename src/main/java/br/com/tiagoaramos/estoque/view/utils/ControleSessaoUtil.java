@@ -129,14 +129,7 @@ public class ControleSessaoUtil {
 				UsuarioDAO.getInstance().persiste(usuario);
 				usuarios.add(usuario);
 				
-				EmpresaModel empresa = new EmpresaModel();
-				empresa.setCnpj("00.000.000/0001-00");
-				empresa.setMensagem("Volte Sempre!");
-				empresa.setNome("Empresa de Teste");
-				empresa.setTelefone("(99) 9 9999-9999");
-				EmpresaDAO.getInstance().persiste(empresa);
 				
-				empresaLogado = empresa;
 				
 				JOptionPane.showMessageDialog(frLogin,
 						"Usuário padrão cadastrado.\n Login : admin + \n Senha: admin");
@@ -151,8 +144,33 @@ public class ControleSessaoUtil {
 				ControleEstoqueMain.mysqldResource.shutdown();
 				System.exit(-1);
 			}
+		}
+		
+
+		List<EmpresaModel> empresas = EmpresaDAO.getInstance().buscarTodos();
+		if(empresas.size() == 0) {
+			try {
+				EmpresaModel empresa = new EmpresaModel();
+				empresa.setCnpj("00.000.000/0001-00");
+				empresa.setMensagem("Volte Sempre!");
+				empresa.setNome("Empresa de Teste");
+				empresa.setTelefone("99-9999-9999");
+				EmpresaDAO.getInstance().persiste(empresa);
+				
+				empresaLogado = empresa;
+			} catch (PersistenciaException e1) {
+				e1.printStackTrace();
+				JOptionPane
+						.showMessageDialog(
+								frLogin,
+								"Erro ao tentar criar um usuário.\n"
+										+ "Favor entrar em contato com o administrador do sistema.\n"
+										+ "\n" + "Erro:\n" + e1.getMessage());
+				ControleEstoqueMain.mysqldResource.shutdown();
+				System.exit(-1);
+			}
 		}else {
-			empresaLogado = EmpresaDAO.getInstance().buscarTodos().get(0);
+			empresaLogado = empresas.get(0);
 		}
 
 		jtfLogin = new JTextField();

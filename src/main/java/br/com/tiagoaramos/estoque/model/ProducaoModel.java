@@ -47,7 +47,7 @@ public class ProducaoModel implements Model  {
 	
 	@ManyToOne
 	@JoinColumn(name="prdsaiid", nullable=false)
-	private SaidaModel saida;
+	private VendaModel saida;
 
 	public Integer getId() {
 		return id;
@@ -89,11 +89,11 @@ public class ProducaoModel implements Model  {
 		this.entrada = entrada;
 	}
 
-	public SaidaModel getSaida() {
+	public VendaModel getSaida() {
 		return saida;
 	}
 
-	public void setSaida(SaidaModel saida) {
+	public void setSaida(VendaModel saida) {
 		this.saida = saida;
 	}
 		

@@ -24,6 +24,8 @@ public class EmpresaModel implements Model  {
 	private String cnpj;
 	@Column(name = "nome")
 	private String nome;
+	@Column(name = "endereco")
+	private String endereco;
 	@Column(name = "mensagem")
 	private String mensagem;
 	@Column(name = "telefone")
@@ -78,6 +80,14 @@ public class EmpresaModel implements Model  {
 
 	public void setTelefone(String telefone) {
 		this.telefone = telefone;
+	}
+
+	public String getEndereco() {
+		return endereco;
+	}
+
+	public void setEndereco(String endereco) {
+		this.endereco = endereco;
 	}
 	
 	
