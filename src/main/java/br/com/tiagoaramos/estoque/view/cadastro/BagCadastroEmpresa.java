@@ -44,6 +44,7 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 	private JTextField jtfNomeEmpresa;
 	private JTextField jtfCnpjEmpresa;
 	private JTextField jtfMensagemEmpresa;
+	private JTextField jtfEnderecoEmpresa;
 	private JFormattedTextField jtfTelefoneEmpresa;
 	private int flagMerge = 0;
 
@@ -68,6 +69,9 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 
 		jtfMensagemEmpresa = new JTextField();
 		grid.add("Mensagem:",jtfMensagemEmpresa);
+		
+		jtfEnderecoEmpresa = new JTextField();
+		grid.add("Endereço:",jtfEnderecoEmpresa);
 
 		jtfTelefoneEmpresa = new JFormattedTextField(new MaskTelefoneFormatter());
 		grid.add("Telefone:",jtfTelefoneEmpresa);
@@ -76,7 +80,7 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 				
 		jpnTabela.setBorder(new TitledBorder("Empresas"));
 		tableModel = new DefaultTableModel(new Object[][] {}, new String[] {
-				"Código", "Nome", "CNPJ", "Mensagem", "Telefone" }) {
+				"Código", "Nome", "CNPJ","Edereço", "Mensagem", "Telefone" }) {
 			private static final long serialVersionUID = 5622980448697494420L;
 
 			public boolean isCellEditable(int row, int col) {
@@ -102,9 +106,12 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 						model.setCnpj(valor);
 						break;
 					case 3:
-						model.setMensagem(valor);
+						model.setEndereco(valor);
 						break;
 					case 4:
+						model.setMensagem(valor);
+						break;
+					case 5:
 						model.setTelefone(valor);
 						break;
 					}
@@ -148,7 +155,7 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 
 	private void adicionarTabela(EmpresaModel Empresa) {
 		tableModel.addRow(new Object[] { Empresa.getId().toString(),
-				Empresa.getNome(),Empresa.getCnpj(),Empresa.getMensagem(),Empresa.getTelefone() });
+				Empresa.getNome(),Empresa.getCnpj(),Empresa.getEndereco(),Empresa.getMensagem(),Empresa.getTelefone() });
 	}
 
 	protected void editarModel() {
@@ -158,9 +165,10 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 			indice = l[0];
 			model = lista.get(indice);
 			jtfNomeEmpresa.setText(model.getNome());
-			jtfMensagemEmpresa.setText(model.getCnpj());
-			jtfCnpjEmpresa.setText(model.getMensagem());
-			jtfTelefoneEmpresa.setText(model.getTelefone());			
+			jtfMensagemEmpresa.setText(model.getMensagem());
+			jtfCnpjEmpresa.setText(model.getCnpj());
+			jtfEnderecoEmpresa.setText(model.getEndereco());
+			jtfTelefoneEmpresa.setText(model.getTelefone());
 		} else {
 			JOptionPane.showMessageDialog(this,
 					"Selecione um registro para editar!", "Erro",
@@ -174,6 +182,7 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 		model.setCnpj(jtfCnpjEmpresa.getText());
 		model.setMensagem(jtfMensagemEmpresa.getText());
 		model.setTelefone(jtfTelefoneEmpresa.getText());
+		model.setEndereco(jtfEnderecoEmpresa.getText());
 		
 		try {
 			if (model.getId() != null && model.getId().intValue() > 0) {
@@ -182,8 +191,9 @@ public class BagCadastroEmpresa extends CadastroBagAb<EmpresaModel> {
 				flagMerge = 1;
 				tableModel.setValueAt(model.getNome(), indice, 1);
 				tableModel.setValueAt(model.getCnpj(), indice, 2);
-				tableModel.setValueAt(model.getMensagem(), indice, 3);
-				tableModel.setValueAt(model.getTelefone(), indice, 4);
+				tableModel.setValueAt(model.getEndereco(), indice, 3);
+				tableModel.setValueAt(model.getMensagem(), indice, 4);
+				tableModel.setValueAt(model.getTelefone(), indice, 5);
 				flagMerge = 0;
 				JOptionPane.showMessageDialog(this,
 						"Empresa atualizada com sucesso!", "Sucesso",

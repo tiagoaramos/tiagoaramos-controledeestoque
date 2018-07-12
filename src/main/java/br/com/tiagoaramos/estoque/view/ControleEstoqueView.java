@@ -37,9 +37,8 @@ import br.com.tiagoaramos.estoque.model.UsuarioModel;
 import br.com.tiagoaramos.estoque.model.dao.AberturaCaixaDAO;
 import br.com.tiagoaramos.estoque.view.cadastro.BagCadastroSenha;
 import br.com.tiagoaramos.estoque.view.movimentacao.BagVendaProduto;
-import br.com.tiagoaramos.estoque.view.utils.BalancaSystemExitListenner;
 import br.com.tiagoaramos.estoque.view.utils.ControleSessaoUtil;
-import br.com.tiagoaramos.estoque.view.utils.MysqlSystemExitListenner;
+import br.com.tiagoaramos.estoque.view.utils.SystemExitListenner;
 
 /**
  * The application's main frame.
@@ -64,8 +63,7 @@ public class ControleEstoqueView extends JFrame {
     	String valor = null;
     	
     	
-    	addWindowListener(new MysqlSystemExitListenner());
-    	addWindowListener(new BalancaSystemExitListenner());
+    	addWindowListener(new SystemExitListenner());
     	
     	if(model != null)
     		valor = model.getValorInicial().toString();

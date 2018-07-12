@@ -16,17 +16,27 @@ public class ControleEstoqueMain {
 	public static final String DRIVER = "com.mysql.jdbc.Driver";
 	public static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
 	public static MysqldResource mysqldResource;
-	public static PesoLib balanca;
 	
 	public static void main(String args[]) throws ClassNotFoundException,
 			SQLException {
 
 		LooadingBar.getInstance().begingLoading("Iniciando Recursos");
-		System.load(ControleEstoqueMain.class.getResource("/").getFile() + "PesoLib.dll");
-		balanca = new PesoLib(); 
+		try {
+			String path = new File(ControleEstoqueMain.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getPath();
+			System.load(path  + "/PesoLib.dll");
+		}catch (Throwable e) {
+			System.load(ControleEstoqueMain.class.getResource("/").getFile() + "PesoLib.dll");
+		}
+		 
+		try{
+			ControleSessaoUtil.balanca = new PesoLib();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		File ourAppDir = new File(System.getProperty(JAVA_IO_TMPDIR));
 		File databaseDir = new File(ourAppDir, "mysql-mxj");
+		databaseDir.getAbsolutePath();
 		int portNumber = Integer.parseInt(System.getProperty("c-mxj_test_port",
 				"3386"));
 		String userName = "olyanren";

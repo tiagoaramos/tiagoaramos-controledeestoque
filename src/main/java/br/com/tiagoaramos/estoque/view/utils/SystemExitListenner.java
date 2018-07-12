@@ -6,7 +6,7 @@ import java.awt.event.WindowListener;
 import br.com.tiagoaramos.estoque.control.ControleEstoqueMain;
 import br.com.tiagoaramos.estoque.utils.LooadingBar;
 
-public class MysqlSystemExitListenner implements WindowListener {
+public class SystemExitListenner implements WindowListener {
 
 	
 	@Override
@@ -29,6 +29,8 @@ public class MysqlSystemExitListenner implements WindowListener {
 	public void windowClosing(WindowEvent e) {
 
 		LooadingBar.getInstance().begingLoading("Parando recursos!");
+		
+		ControleSessaoUtil.balanca.fecha();
 		ControleEstoqueMain.mysqldResource.shutdown();
 
 		LooadingBar.getInstance().stopLoading();

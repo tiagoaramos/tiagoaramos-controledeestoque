@@ -19,11 +19,16 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
+import br.com.mzsw.PesoLib;
 import br.com.tiagoaramos.estoque.control.ControleEstoqueMain;
 import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
+import br.com.tiagoaramos.estoque.model.CategoriaProdutoModel;
 import br.com.tiagoaramos.estoque.model.EmpresaModel;
+import br.com.tiagoaramos.estoque.model.FornecedorModel;
 import br.com.tiagoaramos.estoque.model.UsuarioModel;
+import br.com.tiagoaramos.estoque.model.dao.CategoriaDAO;
 import br.com.tiagoaramos.estoque.model.dao.EmpresaDAO;
+import br.com.tiagoaramos.estoque.model.dao.FornecedorDAO;
 import br.com.tiagoaramos.estoque.model.dao.UsuarioDAO;
 import br.com.tiagoaramos.estoque.utils.GridLayout;
 import br.com.tiagoaramos.estoque.utils.enums.TipoUsuario;
@@ -40,6 +45,7 @@ public class ControleSessaoUtil {
 	static JButton jtbCancel;
 	public static UsuarioModel usuarioLogado;
 	public static EmpresaModel empresaLogado;
+	public static PesoLib balanca;
 
 	static Thread threadAdmin;
 
@@ -108,7 +114,7 @@ public class ControleSessaoUtil {
 
 		frLogin = new JFrame("Login");
 		frLogin.setSize(400, 300);
-		frLogin.addWindowListener(new MysqlSystemExitListenner());
+		frLogin.addWindowListener(new SystemExitListenner());
 
 		mainPanel = new JPanel();
 		mainPanel.setLayout(null);
@@ -118,17 +124,35 @@ public class ControleSessaoUtil {
 
 		List<UsuarioModel> usuarios = UsuarioDAO.getInstance().buscarTodos();
 		if (usuarios.size() == 0) {
-			UsuarioModel usuario = new UsuarioModel();
-			usuario.setEmail("");
-			usuario.setLogin("admin");
-			usuario.setSenha("admin");
-			usuario.setNome("Administrador");
-			usuario.setTipoUsuario(TipoUsuario.ADMINISTRADOR);
 
 			try {
-				UsuarioDAO.getInstance().persiste(usuario);
-				usuarios.add(usuario);
 				
+				UsuarioModel usuario = new UsuarioModel();
+				usuario.setEmail("");
+				usuario.setLogin("admin");
+				usuario.setSenha("admin");
+				usuario.setNome("Administrador");
+				usuario.setTipoUsuario(TipoUsuario.ADMINISTRADOR);
+				UsuarioDAO.getInstance().persiste(usuario);
+				
+				EmpresaModel empresa = new EmpresaModel();
+				empresa.setCnpj("00.000.000/0001-00");
+				empresa.setMensagem("Volte Sempre!");
+				empresa.setNome("Empresa de Teste");
+				empresa.setTelefone("99-9999-9999");
+				EmpresaDAO.getInstance().persiste(empresa);
+				
+				CategoriaProdutoModel categoria = new CategoriaProdutoModel();
+				categoria.setNome("Categoria base");	
+				CategoriaDAO.getInstance().persiste(categoria);
+				
+				FornecedorModel fornecedor = new FornecedorModel();
+				fornecedor.setNome("Forncedor Base");
+				FornecedorDAO.getInstance().persiste(fornecedor);
+				
+				
+				usuarios.add(usuario);
+				empresaLogado = empresa;
 				
 				
 				JOptionPane.showMessageDialog(frLogin,
@@ -144,33 +168,6 @@ public class ControleSessaoUtil {
 				ControleEstoqueMain.mysqldResource.shutdown();
 				System.exit(-1);
 			}
-		}
-		
-
-		List<EmpresaModel> empresas = EmpresaDAO.getInstance().buscarTodos();
-		if(empresas.size() == 0) {
-			try {
-				EmpresaModel empresa = new EmpresaModel();
-				empresa.setCnpj("00.000.000/0001-00");
-				empresa.setMensagem("Volte Sempre!");
-				empresa.setNome("Empresa de Teste");
-				empresa.setTelefone("99-9999-9999");
-				EmpresaDAO.getInstance().persiste(empresa);
-				
-				empresaLogado = empresa;
-			} catch (PersistenciaException e1) {
-				e1.printStackTrace();
-				JOptionPane
-						.showMessageDialog(
-								frLogin,
-								"Erro ao tentar criar um usuário.\n"
-										+ "Favor entrar em contato com o administrador do sistema.\n"
-										+ "\n" + "Erro:\n" + e1.getMessage());
-				ControleEstoqueMain.mysqldResource.shutdown();
-				System.exit(-1);
-			}
-		}else {
-			empresaLogado = empresas.get(0);
 		}
 
 		jtfLogin = new JTextField();
@@ -254,6 +251,7 @@ public class ControleSessaoUtil {
 
 			if (usuario.getSenha().equals(senha)) {
 				usuarioLogado = usuario;
+				empresaLogado = EmpresaDAO.getInstance().buscarTodos().get(0);
 				return true;
 			} else {
 				JOptionPane.showMessageDialog(mainPanel,

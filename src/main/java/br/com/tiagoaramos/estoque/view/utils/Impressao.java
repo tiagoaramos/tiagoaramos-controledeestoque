@@ -5,9 +5,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.print.Doc;
 import javax.print.DocFlavor;
@@ -34,6 +35,8 @@ import br.com.tiagoaramos.estoque.model.dao.EmpresaDAO;
  * @author Sergio
  */
 public class Impressao {
+	
+	private static int COLUNAS = 48;
 
 	/**
 	 * @param args
@@ -68,31 +71,90 @@ public class Impressao {
 
 			EmpresaModel empresa = EmpresaDAO.getInstance().buscarPorCodigo(ControleSessaoUtil.empresaLogado.getId());
 
-			p.print(center80Cols (empresa.getNome()) + (char) 27);
-			p.print(center80Cols (empresa.getCnpj()) + (char) 27);
-			p.print(center80Cols (empresa.getEndereco()) + (char) 27);
-			p.print(center80Cols (empresa.getTelefone()) + (char) 27);
+			p.print(centerCols (empresa.getNome()) + (char) 27);
+			p.print(centerCols (empresa.getCnpj()) + (char) 27);
+			p.print(centerCols (empresa.getTelefone()) + (char) 27);
+			p.print(centerCols (empresa.getEndereco()) + (char) 27);
+			p.print(centerCols (SimpleDateFormat.getDateTimeInstance().format(new Date())) + (char) 27);
+			
 
-			p.print(StringUtils.rightPad("", 80,"=") + (char) 27);
+			p.print(StringUtils.rightPad("", COLUNAS,"=") + (char) 27);
+			
 
+			// Cabeçalho
+			
+			
+			// codigo 4 colunas
+			String linha = "COD.";
+			
+			linha += " ";
+			
+			// Descriçao 20
+			linha += StringUtils.rightPad("DESCRICAO",18," ");
+			linha += " ";
+			
+			// Quantidade 6
+			linha += StringUtils.rightPad("QTD",6," ");
+			linha += " ";
+			
+			// VALOR UNI 8
+			linha += StringUtils.rightPad("UNIT",8," ");
+			linha += " ";
+			
+			// VALOR TOTAL 9
+			linha += "TOTAL   "+ (char) 27;
+			
+			p.print( linha );
+			
 			int i = 1;
 			BigDecimal total = new BigDecimal(0.0d);
+			BigDecimal totalItem = new BigDecimal(0.0d);
+			BigDecimal totalDesconto = new BigDecimal(0.0d);
+			
 			for (VendaProdutoModel item : saida.getProdutos()) {
-				String linha = (item.getQuantidade().toPlainString()) + " x " + item.getProduto().getNome()+ "   ";
-				String valorLinha = ": R$ "+NumberFormat.getCurrencyInstance().format(item.getPrecoVenda().doubleValue());
-				linha = StringUtils.rightPad(linha, 80 - valorLinha.length(),"_") + valorLinha;
-				p.print( linha + (char) 27);
-				total.add(item.getPrecoVenda());
+				String linhaItem =  "    ";
+				
+				// codigo 4 colunas
+				linhaItem = StringUtils.leftPad((item.getProduto().getIdentificador()),4,"0");
+				
+				linhaItem+= " ";
+				// Descriçao 28
+				linhaItem+= StringUtils.rightPad((item.getProduto().getNome().substring(0, (item.getProduto().getNome().length() < 18 ? item.getProduto().getNome().length() : 18 ) )),18," ");
+				
+				linhaItem+= " ";
+				// Quantidade 6
+				linhaItem+= StringUtils.rightPad((NumberFormat.getNumberInstance().format(item.getQuantidade().doubleValue())),6," ");
+
+				linhaItem+= " ";
+				// VALOR UNI 8
+				linhaItem+= StringUtils.rightPad(NumberFormat.getCurrencyInstance().format(item.getProduto().getPrecoVenda().doubleValue()),8," ");
+
+				linhaItem+= " ";
+				// VALOR TOTAL 9
+				linhaItem+= StringUtils.rightPad(NumberFormat.getCurrencyInstance().format(item.getProduto().getPrecoVenda().doubleValue() * item.getQuantidade().doubleValue()),8," ");
+				totalItem = totalItem.add(new BigDecimal(item.getProduto().getPrecoVenda().doubleValue() * item.getQuantidade().doubleValue()));
+				totalDesconto = totalDesconto.add(new BigDecimal((item.getProduto().getPrecoVenda().doubleValue() * item.getQuantidade().doubleValue()) - item.getPrecoVenda().doubleValue()));
+				
+				p.print( linhaItem + (char) 27);
+				total = total.add(item.getPrecoVenda());
 			}
-			p.print("" + (char) 27);
-			p.print(StringUtils.rightPad("", 80,"=") + (char) 27);
-			p.print("" + (char) 27);
+			p.print(StringUtils.rightPad("", COLUNAS," ") + (char) 27);
+			p.print(StringUtils.rightPad("[QTD. Mercadorias:  "+saida.getProdutos().size()+"]",COLUNAS)+ (char) 27);
+			
+			
+			p.print(StringUtils.rightPad("", COLUNAS,"=") + (char) 27);
+			p.print(StringUtils.rightPad("", COLUNAS," ") + (char) 27);
+			
 			total.setScale(2, RoundingMode.CEILING);
-			p.print(StringUtils.leftPad("TOTAL  R$ " + total.toPlainString(),80," ") + (char) 27);
-			p.print("" + (char) 27);
-			p.print("" + (char) 27);
-			p.print("" + empresa.getMensagem() + (char) 27);
-			p.print("" + (char) 27 + 'w');
+			p.print("TOTAL ITENS   " + StringUtils.leftPad(NumberFormat.getCurrencyInstance().format(totalItem.doubleValue()),COLUNAS - 14," ") + (char) 27);
+			p.print("DESCONTO      " + StringUtils.leftPad(NumberFormat.getCurrencyInstance().format(totalDesconto.doubleValue()),COLUNAS - 14," ") + (char) 27);
+			p.print("TOTAL GERAL   " + StringUtils.leftPad(NumberFormat.getCurrencyInstance().format(total.doubleValue()),COLUNAS - 14," ") + (char) 27);
+
+			p.print(StringUtils.rightPad("", COLUNAS," ") + (char) 27);
+			p.print(StringUtils.rightPad("", COLUNAS," ") + (char) 27);
+			p.print(centerCols(empresa.getMensagem()) + (char) 27);
+			p.print(StringUtils.rightPad("", COLUNAS," ") + (char) 27);
+			p.print(" " + (char) 27 + 'w');
 
 			FileInputStream fi = new FileInputStream("c.txt");
 
@@ -133,15 +195,15 @@ public class Impressao {
 	}
 	
 	
-	public static String center80Cols(String conteudo) {
+	public static String centerCols(String conteudo) {
 		String retorno ="";
 		if(conteudo != null) {
-			int preencher = (80 - conteudo.length()) / 2;
+			int preencher = (COLUNAS - conteudo.length()) / 2;
 			retorno = StringUtils.leftPad("", preencher," ");
 			retorno += conteudo;
-			retorno = StringUtils.rightPad(retorno, 80," ");
+			retorno = StringUtils.rightPad(retorno, COLUNAS," ");
 		}else {
-			retorno = StringUtils.rightPad(retorno, 80," ");
+			retorno = StringUtils.rightPad(retorno, COLUNAS," ");
 		}
 		return retorno;
 	}

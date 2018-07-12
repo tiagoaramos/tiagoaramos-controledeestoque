@@ -50,8 +50,6 @@ import javax.swing.event.AncestorListener;
 import javax.swing.table.DefaultTableModel;
 
 import br.com.mzsw.BalancaListener;
-import br.com.mzsw.PesoLib;
-import br.com.tiagoaramos.estoque.control.ControleEstoqueMain;
 import br.com.tiagoaramos.estoque.excecao.PersistenciaException;
 import br.com.tiagoaramos.estoque.model.EntradaModel;
 import br.com.tiagoaramos.estoque.model.EntradaProdutoModel;
@@ -131,12 +129,13 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 
 	private ProdutoModel produto;
 	private String codigoProduto;
+	private Double total;
 
-	private PesoLib balanca;
 
 	public BagVendaProduto() {
 		try {
 			initComponents();
+			total = 0.0;
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -181,15 +180,9 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 
 		// Grid
 		linha4();
-		
 
 		try{
-			balanca = ControleEstoqueMain.balanca;
-			if(balanca == null) {
-					balanca = new PesoLib();
-					ControleEstoqueMain.balanca = balanca;
-			}
-			balanca.addEventListener(this);
+			ControleSessaoUtil.balanca.addEventListener(this);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -216,6 +209,8 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 					jtfCodigoProduto.setBorder(bordaPadrao);
 					bordaPadrao = null;
 					codigoProduto = "";
+				}else if (e.getKeyCode() == KeyEvent.VK_F1 ) {
+					mostraJanelaFinalizar();
 				}
 			}
 
@@ -229,8 +224,8 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 
 						if(produto.getTipoProduto() != null && produto.getTipoProduto().equals(TipoProduto.PESO)) {
 							try {
-								if(balanca != null) {
-									balanca.setPreco(produto.getPreco().floatValue());
+								if(ControleSessaoUtil.balanca != null) {
+									ControleSessaoUtil.balanca.setPreco(produto.getPreco().floatValue());
 								}
 							}catch (Exception err) {
 								System.out.println(err.getMessage());
@@ -282,8 +277,7 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 
 	private void linha2() {
 		// Quantidade de produtos
-		jtfQuantidadeProduto = new JFormattedTextField(NumberFormat
-				.getNumberInstance());
+		jtfQuantidadeProduto = new JFormattedTextField(NumberFormat.getNumberInstance());
 		jtfQuantidadeProduto.setName("jtfQuantidadeProduto");
 		jtfQuantidadeProduto.addKeyListener(new KeyListener() {
 			public void keyTyped(KeyEvent e) {
@@ -536,10 +530,11 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 			jtfQuantidadeProduto.setEnabled(false);
 			jtfValorVenda.setEnabled(false);
 			limparCampos();
-
+			
+			total += vendaAtual.doubleValue();
 			alteraTotal(vendaAtual);
 
-			mostraJanelaFinalizar();
+			jtfCodigoProduto.requestFocus();
 
 		} catch (Exception ex) {
 			Logger.getLogger(BagVendaProduto.class.getName()).log(Level.SEVERE,
@@ -593,6 +588,7 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 					finalizarSaida();
 				}
 			});
+			/*
 			jbtFinalizarCrediario = new JButton("F3 - Crediario");
 			jbtFinalizarCrediario.addActionListener(new ActionListener() {
 				@Override
@@ -603,6 +599,7 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 					finalizarSaida();
 				}
 			});
+			*/
 			jbtContinuar = new JButton("F4 - continuar");
 			jtfDesconto = new JFormattedTextField(new DecimalFormat("#.00"));
 
@@ -618,7 +615,7 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 				@Override
 				public void keyPressed(KeyEvent e) {
 					if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-						if(!jtfDesconto.getText().equals(lbVlTotal.getText())){
+						if(!jtfDesconto.getText().equals(total.toString())){
 							saida.setTipo(TipoSaida.CARTAO);
 							frameModal.setVisible(false);
 							janelaAguarde(true);
@@ -650,9 +647,7 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 			});
 			lblTotalFinalizar = new JLabel();
 
-			grid.add(jbtFinalizarCartao, jbtFinalizarDinheiro,jbtFinalizarCrediario);
-			grid.add(jbtContinuar);
-
+			grid.add(jbtFinalizarCartao, jbtFinalizarDinheiro, jbtContinuar);
 			grid.add("Total: ", lblTotalFinalizar);
 			grid.add("Desconto: ", jtfDesconto);
 			
@@ -661,9 +656,8 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 			
 			
 		}
-		jtfDesconto.setValue(new BigDecimal(lbVlTotal.getText().replaceAll(",",
-				".")));
-		lblTotalFinalizar.setText(lbVlTotal.getText());
+		jtfDesconto.setValue(new BigDecimal(total));
+		lblTotalFinalizar.setText(NumberFormat.getCurrencyInstance().format(total));
 
 	}
 	
@@ -726,8 +720,8 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 						saidaDAO = SaidaDAO.getInstance();
 
 					// desconto
-					if(!jtfDesconto.getText().equals(lbVlTotal.getText())){
-						BigDecimal valor = new BigDecimal(lbVlTotal.getText().replaceAll("[,]","."));
+					if(!jtfDesconto.getText().equals(total.toString())){
+						BigDecimal valor = new BigDecimal(total);
 						BigDecimal valorDesconto = new BigDecimal(jtfDesconto.getText().replaceAll("[,]","."));
 						BigDecimal razao = valor.subtract(valorDesconto);
 						razao = razao.divide(valor,2,BigDecimal.ROUND_CEILING);
@@ -768,6 +762,7 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 					JOptionPane.showMessageDialog(grid.getContentPane(),
 							"Compra registrada com sucesso!", "Sucesso",
 							JOptionPane.INFORMATION_MESSAGE);
+					total = 0.0;
 					try {
 						((ControleEstoqueView) grid.getContentPane().getParent().getParent().getParent()
 								.getParent()).alteraMainPanel(((BagVendaProduto)grid.getContentPane()).getClass().newInstance());
@@ -860,11 +855,7 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 	}
 
 	private void alteraTotal(BigDecimal alt) {
-		BigDecimal valor = new BigDecimal(lbVlTotal.getText().replaceAll("[,]",
-				"."));
-		valor.setScale(2, BigDecimal.ROUND_CEILING);
-		valor = valor.add(alt);
-		lbVlTotal.setText(valor.toPlainString().replaceAll("[.]", ","));
+		lbVlTotal.setText(NumberFormat.getCurrencyInstance().format(total));
 	}
 
 	private void setValor(BigDecimal valor) {
@@ -944,18 +935,18 @@ public class BagVendaProduto extends CadastroBagAb<VendaProdutoModel> implements
 	
 	@Override
 	public void onConectado(Object sender) {
-		
+		System.out.println("Balança Conectada!");
 	}
 
 	@Override
 	public void onPesoRecebido(Object sender, int gramas) {
-		jtfQuantidadeProduto.setText(NumberFormat.getNumberInstance().format(gramas / 1000));
+		System.out.println("Gramas " + gramas);
+		jtfQuantidadeProduto.setText(NumberFormat.getNumberInstance().format(new Double((double)gramas / (double)1000)));
 	}
 
 	@Override
 	public void onDesconectado(Object sender) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("Balança DESconectada!");
 	}
 
 }
